@@ -4,3 +4,4 @@ This generative AI threat modeling analysis tool was created using Agent.AI buil
 To access the threat modeling agent, users will need to join the Agent.AI platform and then use my ICS OT IoT AI agent based threat modeling analysis tool. The tool can be found on agent.AI here https://agent.ai/profile/IoT_OT_ICS_ThreatModeler 
 
 Layperson users can leverage this tool without having to be a technical expert. The AI agent asks questions, accepts the requested document or artifact uploads, steps through a series of analysis and open source research steps then finally produces a markdown output of a threat model analysis within the scope of the component, device, application, or system that the user provided. It focuses on the manual human analysis portion of threat modeling. It currently has no code review or CI/CD integrations.
+ 
