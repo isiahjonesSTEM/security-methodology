@@ -1,0 +1,6 @@
+## Overview
+This generative AI threat modeling analysis tool was created using Agent.AI building platform. The AI agent allows user to upload design documents, engineering documents, schematics, network diagrams, existing threat model diagrams, architecture diagrams, user and product manuals, data sheets etcetera to expedite the threat model analysis portion of threat modeling. It was specifically designed to use MITRE EMB3D, MITRE ATT&CK for ICS, ISA/IEC 62443 parts 4-2 and 3-3 and version 3 of ISA84.00.09 to conduct analysis of user provided devices, components, applications, and systems. 
+
+To access the threat modeling agent, users will need to join the Agent.AI platform and then use my ICS OT IoT AI agent based threat modeling analysis tool. The tool can be found on agent.AI here https://agent.ai/profile/IoT_OT_ICS_ThreatModeler 
+
+Layperson users can leverage this tool without having to be a technical expert. The AI agent asks questions, accepts the requested document or artifact uploads, steps through a series of analysis and open source research steps then finally produces a markdown output of a threat model analysis within the scope of the component, device, application, or system that the user provided. It focuses on the manual human analysis portion of threat modeling. It currently has no code review or CI/CD integrations.
