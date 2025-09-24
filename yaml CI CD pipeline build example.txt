@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+  - release
+  - preprod
+  - integration
+  - prod
+
+build:
+  stage: build
+  script:
+    - echo "This is a build step."
+
+test:
+  stage: test
+  script:
+    - echo "This is a test step."
+
+integration:
+  stage: integration
+  script:
+    - echo "This is an integration step."
+    - exit 1
+  allow_failure: true # Even if the job fails, continue to the next stages
+
+prod:
+  stage: prod
+  script:
+    - echo "This is a deploy step."
+  when: manual # Continuous Delivery
+  
+  Name	Value
+Username	root
+Password	pdso-training
+
+sast:
+  stage: build
+  script:
+    - docker pull hysnsec/bandit  # Download bandit docker container
+    - docker run --user $(id -u):$(id -g) -v $(pwd):/src --rm hysnsec/bandit -r /src -f json -o /src/bandit-output.json
+  artifacts:
+    paths: [bandit-output.json]
+    when: always
+  allow_failure: true   #<--- allow the build to fail but don't mark it as such
