@@ -1,0 +1,55 @@
+# Airport Security Assessment Recon List
+
+## Aviation Ops Targets
+a.	Aviation Service Providers
+b.	Aerodrome Operator
+c.	Air operators
+d.	Aviation fuel providers at aerodrome
+e.	Ground service providers at aerodrome
+f.	 Critical maintenance repair and overhaul (MRO) with direct access to airport air side
+g.	Third party service providers and original equipment manufacturers (OEM)s servicing the airport
+h.	Air traffic services
+i.	Ground and runway movement control at aerodromes
+j.	Departure access control, ticketing, check-in, security screening, and customer management
+k.	Passenger baggage, aircraft cargo and air craft handling
+l.	Flight information, planning and scheduling
+m.	Aircraft fuel provision
+n.	Maintenance and repair overhaul
+
+## Example Dependencies 
+•	Generators, substations, lighting etc
+•	Fire and life safety systems and services (ER, Fire Chief etc)
+•	Comms
+•	Physical access systems (e.g. badges) and cameras
+•	Chillers, boilers, air handlers, air compressors, HVAC etc 
+•	Fuel delivery systems
+• Fuel lines
+•	Reservoirs
+•	Truck resupply system 
+•	Redundant delivery routes/systems
+•	Lighting/navigation aids
+• RF Beaconing system
+
+## RECON Assessment Tools and Sources
+•	Wikimapia - https://wikimapia.org 
+•	Shodan www.shodan.io 
+•	Recon-ng https://hackertarget.com/recon-ng-tutorial/
+•	IATA - https://www.iata.org/
+•	ICAO - https://www.icao.int/Pages/default.aspx  security https://www.icao.int/Security/Pages/default.aspx 
+•	Maltego - https://www.maltego.com/products/
+•	theHarvester - https://github.com/laramies/theHarvester
+•	Spiderfoot - https://github.com/smicallef/spiderfoot
+•	OSINT tools library list - https://github.com/jivoi/awesome-osint
+•	yWorks - https://www.yworks.com/products/yed/gallery (visually show the interdependencies we discover between the operations areas)
+•	Prezi - https://prezi.com/  - more interactive presentations to communicate aviation sector threat landscape, interdependencies 
+•	Aviation-ISAC - https://www.a-isac.com/2019-summit-presentations
+•	ODNI Aviation Insider Paper - https://www.dni.gov/files/PE/Documents/4---2017-AEP_Aviation-Insider-Paper.pdf 
+•	Kali (includes Nmap, pof, OpenVAS etc etc) – https://www.kali.org/ but using SANS ICS 612 VM with upated ICS tools etc. 
+•	Bloodhound –  https://github.com/BloodHoundAD/BloodHound - for active directory attack surface mapping assuming we have the time to get down to system access in a high level assessment with such a broad scope and limited team and budget
+•	Wireshark, Grassmarlin and Networkminer - for pcap analysis assuming we get to that level of detail 
+•	Google / Googlemaps / Googleearth
+• OpenStreetMaps
+•	Bingmaps
+•	Civil Construction Permit resources
+
+
