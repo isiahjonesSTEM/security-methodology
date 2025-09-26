@@ -1,0 +1,46 @@
+# ICS OT Assessment Agenda Approach - Airport Security Assessment Example
+
+## Meetings & Agenda
+1.	Day 1 - In briefing, welcome and general overview meetings cover who we are, what we are working on. This meeting should include, if possible, the Team Leads/Responsible Parties of IT, physical security, safety, emergency operations, facilities and utilities maintenance, HR, production operations, controls system engineers, automation and instrument technicians and other relevant personnel from the stakeholders requested in the tender such as 
+a.	Customer/Sector Service Providers
+b.	ICS OT Operator
+c.	Air operators
+d.	Customer/Sector fuel providers at aerodrome
+e.	Ground service providers at aerodrome
+f.	 Critical maintenance repair and overhaul (MRO) with direct access to airport air side
+g.	Third party service providers and original equipment manufacturers (OEM)s servicing the airport
+h.	Air traffic services
+i.	Ground and runway movement control at aerodromes
+j.	Departure access control, ticketing, check-in, security screening, and customer management
+k.	Passenger baggage, aircraft cargo and air craft handling
+l.	Flight information, planning and scheduling
+m.	Aircraft fuel provision
+n.	Maintenance and repair overhaul
+
+2.	Days 1 to 3 - After initial in briefing and initial overview of airport operations and stakeholder points of contacts we then set up 1 hr initial meetings with each stakeholder throughout first 2-3 days onsite. In these meetings we learn a deeper dive overview of each stakeholder’s area of operations. Some of the artifacts we request and collect are as follows but not limited to:
+a.	Engineering diagrams
+b.	Systems manuals and specifications
+c.	Asset inventory lists 
+d.	Existing risk registers
+e.	Existing security and safety policies and procedures
+f.	Network diagrams
+g.	Existing safety and security risk assessment results
+h.	Additional points of contacts for third parties and OEMs
+i.	Device, system and network logs, configurations and dumps of device code (e.g. PLC logic samples) 
+
+3.	Day 2 to Departure day and out briefs - In parallel or after 2 or 3 days of interviews, in briefs, collection of artifacts etcetera we begin strategically planning and executing walkdowns of operations areas, including equipment cabinets, taking pictures of equipment, screenshots of systems, sample code reviews, and do sample network sniffing where relevant. If safe and applicable we may also do some active vulnerability and network discovery scans on some equipment. This is done in collaboration and with escort of the operations area technicians on the ground and the applicable third party and OEM technicians who operate and know the equipment inside and out. 
+
+Overall, the purpose of course is an all threats all hazards attack surface mindset view and assessment of the various potential risks. This is not limited to the IT systems or traditional network reviews, but rather an end-to-end assessment of the attack surfaces present. Such attacks are not limited to remote actors but could include internal threats or even inadvertent attacks that are not intentionally performed but the risk of such must be understood in order to mitigate.
+
+4.	Remaining days and between walkdowns and interviews we begin digesting, racking and stacking and organizing initial collected artifacts, notes, pictures, logs, etcetera and preparing for offsite analysis, report writing and out brief slide preparation. This is where any last-minute clarifications with the stakeholders occurs. If we are on site for 2 consecutive weeks this also usually includes a biweekly status update and out brief to the stakeholders as well as initial scheduling of the next round of onsite assessment with remaining stakeholders not yet assessed. 
+
+5.	Post onsite assessment we spend 1 to 2 weeks doing analysis, research, writing observations and recommendations reports and formal out briefs as well as expected updates to risk registers or creation of recommended risk registers. 
+
+6.	Deliver reports, out briefs and or risk registers to required stakholders.
+
+7.	Schedule remaining or additional onsite assessments with stakeholders yet to be assessed and repeat steps one to 6 above.
+
+8.	Create aggregate summary trends report across all areas with overall maturity risk scores based on methodologies used such as CMMI levels 1 to 5 scored against ISA/IEC 62443 (2-1, 3-3, 4-2) requirements, elements and questions as baseline benchmarks for security program, systems and component level security requirements and best practices particularly for operational technology and industrial control systems and dependent critical airport operations systems.
+
+9.	Deliver final road show out briefs, risk register updates, multiyear recommended remediation road map with our systems security engineering and remediation services offerings etcetera. 
+
