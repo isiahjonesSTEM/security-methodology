@@ -1,0 +1,30 @@
+## Architecture and Network
+•	Have security zones, architecture levels and conduits been defined and mapped? 
+•	Has a testing zone and work bench area been included or created? 
+•	Have safety zones been created?
+•	Have facilities, fire, mass communication, physical access and other building related control systems been included? 
+•	Have tiers of logging, alarm management, types of protocols and segmentation been implemented? 
+•	How are RF/wireless components in cabinets as well as peripheral devices (e.g. laptops and phones) accounted for in architecture security zones? 
+•	Are P&ID, network and process flow diagrams current and accurate? Do they identify devices, their conduits, protocols, systems, zones and locations? 
+•	How is cloud and remote access accounted for? 
+
+## Devices and Components
+•	Has a general inventory of types of devices been created? 
+•	Are devices broken up into classes and levels?
+•	Have basic device features (e.g. conduit type, protocol, IP, MAC and ports been captured)?
+•	Are asset tags assigned?
+•	Are there spare parts? 
+•	Are portable and peripheral assets accounted for? (e.g. tablets, phones, ID/badge, tokens, laptops, USB etc.)
+•	Have technical manuals and data sheets been collected from vendors and integrators? 
+
+## Applications and Systems
+•	Has a basic inventory and classification of types of applications and systems been created? (e.g. types of DCS, SCADA, PLC, Historian, HMI software, operating systems etc.)
+•	Has ports, protocols and services and APIs been captured?
+•	Has a patch management process including testing, roll back and deployment been created? 
+•	Has alarming and notifications been defined and mapped? For which applications and systems? How do they communicate on the network? 
+
+## Users, Roles and Responsibilities
+•	Have users been defined and documented? (e.g. organic employee vs contractor vs third party OEM etc.)
+•	Has role-based access control been implemented?
+•	Has configuration, maintenance and changes been tracked, defined and understood? Is there a detailed work order process that tracks date, time, system, person, roll etc. for changes? 
+•	Has continuity of operations and emergency ad hoc roles or privilege changes been considered, defined and tested? (e.g. emergency stop roles, ad hoc changes in privileges etc.)? 
