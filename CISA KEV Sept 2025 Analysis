@@ -1,0 +1,3 @@
+# CISA KEV Sept 2025 Analysis
+Tableau Public Visual Analysis of the CISA Known Exploited Vulnerability list up to 25 September 2025. Analysis focused on top 10 vendors with the most CWE and CVE. Most common CWE amongst those top 10 vendors and due dates by year for those CWE and CVE. The Visual Analysis can be found at this link:
+https://public.tableau.com/views/CISAKEVVulnerabilityAnalysis-Sept2025/Top10CWESortedbyVendorProductCount?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
