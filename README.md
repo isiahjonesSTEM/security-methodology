@@ -12,4 +12,7 @@ This repository is a collection of Isiah Jones security ideas, created and colle
 ** Other tools, templates, and research - I share tools, research, and other templates that I have collected, learned, or created that may be helpful for someone in the community. 
 
 ## Contact
-isiahjones@mail.com
+email: isiahjones@mail.com
+discord: isiahjonescyber
+slack: isiahjones
+
