@@ -13,6 +13,8 @@ This repository is a collection of Isiah Jones security ideas, created and colle
 
 ## Contact
 email: isiahjones@mail.com
+
 discord: isiahjonescyber
+
 slack: isiahjones
 
