@@ -5,7 +5,7 @@
 •	Configuration, services, ports, protocols, software list for machines, workstations and devices (e.g. Rockwell Stratix Switches, upstream or downstream switches, any serial to Ethernet devices, PLCs, programmable VFDs, HMIs, workstations etc)
 •	Existing documentation and folks that understand it to walk me through their plant ops, the processes of each line and products produced (e.g. brands) – network diagrams, system diagrams, pdf dump of PLCs and VFDs code logic (Ladder, Function Block etc), process and instrument diagrams etc
 •	Line drawings, network diagrams, plant layout diagrams 
-•	Network packet captures of plant level and specific line/field panel/zone level traffic (will need traffic captures to be less than 1 gig for each snapshot or will need ability to plug in my Jacobs dev laptop to mirror ports to sniff and capture sample traffic myself if they can’t provide it to me)
+•	Network packet captures of plant level and specific line/field panel/zone level traffic (will need traffic captures to be less than 1 gig for each snapshot or will need ability to plug in my laptop or tools to mirror ports to sniff and capture sample traffic myself if customer can’t provide it to me)
 •	Policies, procedures, playbooks (configuration management, Incident response, access control, asset & inventory management, requirements/specification docs (e.g. EQ/FRM/URS/HDS/SRS), change control, acceptance testing), 
 •	Existing policies and procedures for access control, system support SLAs, configuration management (e.g. think supply chain access to their ops and assets)
 
@@ -19,5 +19,5 @@
 •	Someone from corporate IT knowledgeable of support within the plant
 •	Someone with local admin/config rights to machines, workstations and devices (e.g. Rockwell Stratix Switches, upstream or downstream switches, any serial to Ethernet devices, PLCs, programmable VFDs, HMIs, workstations etc)
 •	Will need permission to take screenshots and or photos with a canon digital camera of configurations, installed software, running services, user accounts, conduit, process machines connected to controllers etc
-•	Will need permission and someone with local admin access to run attached windows systems internals script that quickly pulls running ports, services, installed software, users etc for any windows OS (including CE on the Panel View HMIs) script attached for their inspection if needed.  (permission to use consultant dev laptops or provided a customer laptop with local admin account to load and customize tools)
+•	Will need permission and someone with local admin access to run requested windows systems internals scripts that quickly pulls running ports, services, installed software, users etc for any windows OS (including CE on the Panel View HMIs). scripts are provided to customer for their inspection if needed.  (permission to use consultant dev laptops or a customer provided laptop with local admin account to load and customize tools)
 
