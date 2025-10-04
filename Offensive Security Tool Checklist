@@ -1,0 +1,102 @@
+
+        ## OSINT Recon and Social engineering:
+
+            FOCA
+            SHODAN (need API key)
+            Censys (need API key)
+            Maltego
+            Recon-ng
+            TheHarvester
+            Maigret (OSINT search via usernames)
+            Social Engineering Toolkit (SET)
+            BeEF
+            WikiMapia
+            Google hacking/dorks
+            OpenStreetMap
+            Regulatory case filings, court case filings, real estate info, merger/acquisition/divestment info, RFI/RFP/tender info etc
+
+         ## Scanning, Footprinting and Enumeration:
+
+            Nmap
+            Softperfect Net Scan
+            SMBmap
+            OpenVAS
+            Nessus
+            Wireshark
+            Networkminer
+            Tenable OT
+            theHarvester
+            Scout Suite (mulit Cloud Scanner)
+            Kube-hunter (kubernetes testing tool)
+            Configuration Hardening Assessment PowerShell Script (CHAPS)
+            OpenSCAP
+            Rekono
+            WPScanner (word press websites)
+            Nikto
+            ICS Security Tool scripts https://github.com/ITI/ICS-Security-Tools/blob/master/scripts/README.md
+            ICS protocol scripts
+            Device Configuration, Programming and Calibration Tools (e.g. FDT, Field Device Integration (FDI), GSD files, OpenPLC etc)
+            RTL-SDR & GQRX
+            Saleae Logic Analyzer
+
+        ## Attacking and Exploitation
+
+            Metasploit and Searchsploit
+            Empire
+            bloodhound
+            Powersploit with CHAPS
+            Scapy
+            Hping
+            Burp Suite
+            OWASP Zap
+            Postman
+            Gobuster
+            OWASP Dirbuster (Dirb on kali)
+            Pacu (AWS Cloud Exploits Framework)
+            ControlThings.io
+            AttifyOS
+            Social Engineering Toolkit (SET)
+            BeEF
+            CrackMapExec
+            John the Ripper
+            Cain and Abel
+            Impacket tools
+            OllyDbg
+            Immunity Debugger
+            WinDbg
+            GNU debugger (GDB)
+            IDA
+            Ghidra
+            BinaryNinja
+            JTAGulator
+            AttifyBadge
+            HackRF
+            Wifi Pinapple
+            WHID
+            Rubber Ducky
+            Kismet
+            Aircrack-ng
+            FlipperZero
+            Ubertooth One
+            Bettercap
+            Xbee
+            Rekono (install it on Kali)
+            Caldera from MITRE
+
+        ## Post Exploitation and Persistence
+
+            Mimikatz
+            Kali
+            Bloodhound
+            Empire
+            Bash
+            Shellcode
+            Powershell
+            Systeminternals
+ 
+        ## Reporting and recommendations
+
+            DefectDojo
+            PeTeReport (install it on Kali)
+            Report templates
+            Caldera report features
