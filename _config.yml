@@ -1,3 +1,5 @@
 remote_theme: pages-themes/cayman@v0.2.0
 title: Security Methodology
 description: Tools, templates, papers and research by Isiah Jones
+show_downloads: true
+google_analytics: G-8DFDTVW0NV
