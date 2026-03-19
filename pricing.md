@@ -77,7 +77,7 @@ Below are my tiers for Sponsorship and ad hoc fixed project services and fixed d
 
 <!-- Offline Scripts Package -->
 <div style="border:1px solid #ddd; padding:20px; margin:20px 0; border-radius:8px;">
-  <h3> Access to my private nonpublic tools, scripts and templates Package – $10,000</h3>
+  <h3>Access to my private nonpublic tools, scripts and templates Package – $10,000</h3>
   <p>Custom scripts for bug hunting, scanning, enumeration, headless binary RE pipeline</p>
   <stripe-buy-button
     buy-button-id="{{BUY_BUTTON_ID_SCRIPTS}}"
@@ -110,7 +110,7 @@ Below are my tiers for Sponsorship and ad hoc fixed project services and fixed d
 
 ---
 
-### 🔁 Already a Sponsor?
+### 🔁 Already a Monthly Subscription Sponsor?
 [Manage your subscription →](/security-methodology/manage)
 
 <p style="margin-top: 40px; font-style: italic;">After payment, you'll receive confirmation via email. I'll contact you within 24 hours to onboard you.</p>
