@@ -1,6 +1,7 @@
 ---
 layout: default
-title: Home
+title: Isiah Jones 
+subtitle: C-AI/MLPen, GICSP, CISSP, Pentest+ce
 ---
 
 # Security Methodology
