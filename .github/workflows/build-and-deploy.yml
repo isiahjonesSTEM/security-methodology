@@ -41,8 +41,8 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'   # Match your GitHub Pages version
-          bundler-cache: true    # Installs gems from Gemfile
+          ruby-version: '3.2'
+          bundler-cache: true
 
       - name: Install dependencies
         run: bundle install
@@ -51,11 +51,12 @@ jobs:
         run: bundle exec jekyll build
         env:
           JEKYLL_ENV: production
+          PAGES_REPO_NWO: isiahjonesSTEM/security-methodology
 
       - name: Upload built site as artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site      # Jekyll outputs to _site
+          path: ./_site
 
   deploy:
     needs: build
