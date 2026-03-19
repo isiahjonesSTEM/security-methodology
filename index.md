@@ -18,7 +18,14 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 - [Security Testing and Assessment Templates and Checklists](https://github.com/isiahjonesSTEM/security-methodology/tree/main/Testing_Assessment_Checklists_Templates)
 - [Podcast Interviews](https://github.com/isiahjonesSTEM/security-methodology/blob/main/Podcast%20Interviews)
 
+## 🤝🏿 Connect
 
+- **Email**: isiahjones@mail.com
+- **Linkedin**: https://www.linkedin.com/in/isiah-jones-153697392
+- **Twitter/X/Instagram/Threads**: @aicyberiot
+- **Discord**: `isiahjonescyber`
+- **Slack**: `isiahjones`
+  
 ## 🙏🏿 Support My Work
 
 If you find these resources valuable or need **ad hoc project services** (publishing affiliate ads on my page, creating scripts, templates, providing security advice or troubleshooting support etcetera), please consider supporting my work through GitHub Sponsors.
