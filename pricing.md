@@ -5,6 +5,8 @@ title: Sponsorship & Services Pricing
 
 # 🙏🏿 Support My Work – Pricing & Tiers
 
+[🏠 Home](/security-methodology/) | [Manage Subscription](/security-methodology/manage)
+
 Below are my tiers for Sponsorship and ad hoc fixed project services and fixed deliverables. For questions, connect with me via email or social media.
 
 ---
