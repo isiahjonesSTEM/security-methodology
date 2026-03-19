@@ -25,7 +25,7 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 - **Twitter/X/Instagram/Threads**: @aicyberiot
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
-  
+
 ## 🙏🏿 Support My Work
 
 If you find these resources valuable or need **ad hoc project services** (publishing affiliate ads on my page, creating scripts, templates, providing security advice or troubleshooting support etcetera), please consider supporting my work directly via my pricing page or via GitHub Sponsors.
