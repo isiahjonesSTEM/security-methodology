@@ -24,6 +24,8 @@ The repository is organized into the following directories:
 ## 🤝 Connect
 
 - **Email**: isiahjones@mail.com
+- **Linkedin**: https://www.linkedin.com/in/isiah-jones-153697392
+- **Twitter/X**: @aicyberiot
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
 
