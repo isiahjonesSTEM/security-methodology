@@ -4,7 +4,7 @@ title: Manage Your Sponsorship
 ---
 
 # 🙏🏿 Manage Your Sponsorship
-
+[🏠 Home](/security-methodology/) | [View Pricing](/security-methodology/pricing)
 If you are an existing sponsor with a monthly subscription, you can manage your billing details, update your payment method, or cancel your subscription at any time through our secure customer portal.
 
 <div style="text-align: center; margin: 40px 0;">
