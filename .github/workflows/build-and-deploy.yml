@@ -1,0 +1,58 @@
+name: Build and Deploy Pricing Page
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replace placeholders with secrets
+        env:
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+          BUY_BUTTON_ID_SUPPORTER: ${{ secrets.BUY_BUTTON_ID_SUPPORTER }}
+          BUY_BUTTON_ID_README: ${{ secrets.BUY_BUTTON_ID_README }}
+          BUY_BUTTON_ID_WEBSITE: ${{ secrets.BUY_BUTTON_ID_WEBSITE }}
+          BUY_BUTTON_ID_AFFILIATE: ${{ secrets.BUY_BUTTON_ID_AFFILIATE }}
+          BUY_BUTTON_ID_LICENSE: ${{ secrets.BUY_BUTTON_ID_LICENSE }}
+          BUY_BUTTON_ID_ADVISORY: ${{ secrets.BUY_BUTTON_ID_ADVISORY }}
+          BUY_BUTTON_ID_SCRIPTS: ${{ secrets.BUY_BUTTON_ID_SCRIPTS }}
+          BUY_BUTTON_ID_AUTOMATION: ${{ secrets.BUY_BUTTON_ID_AUTOMATION }}
+          BUY_BUTTON_ID_FIXED: ${{ secrets.BUY_BUTTON_ID_FIXED }}
+          STRIPE_CUSTOMER_PORTAL_URL: ${{ secrets.STRIPE_CUSTOMER_PORTAL_URL }}
+        run: |
+          sed -i "s|{{STRIPE_PUBLISHABLE_KEY}}|$STRIPE_PUBLISHABLE_KEY|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_SUPPORTER}}|$BUY_BUTTON_ID_SUPPORTER|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_README}}|$BUY_BUTTON_ID_README|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_WEBSITE}}|$BUY_BUTTON_ID_WEBSITE|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_AFFILIATE}}|$BUY_BUTTON_ID_AFFILIATE|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_LICENSE}}|$BUY_BUTTON_ID_LICENSE|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_ADVISORY}}|$BUY_BUTTON_ID_ADVISORY|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_SCRIPTS}}|$BUY_BUTTON_ID_SCRIPTS|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_AUTOMATION}}|$BUY_BUTTON_ID_AUTOMATION|g" pricing.md
+          sed -i "s|{{BUY_BUTTON_ID_FIXED}}|$BUY_BUTTON_ID_FIXED|g" pricing.md
+          sed -i "s|{{STRIPE_CUSTOMER_PORTAL_URL}}|$STRIPE_CUSTOMER_PORTAL_URL|g" manage.md
+
+      - name: Upload built site as artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
