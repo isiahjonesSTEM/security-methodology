@@ -1,0 +1,35 @@
+:: this file is to build a batch script to run several windows system internal tools for FAT/SAT and even pentest or assessments on customer windows host devices
+:: must run the file with admin privileges for the commands to work properly 
+
+::create host name folder on desktop
+	C:\>md "%USERPROFILE%\Desktop\%ComputerName%"
+	
+:: check active network connections
+	Netstat -abnov > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_netstat.txt" 
+	
+:: check windows event logs
+	psloglist.exe > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_eventlogs.txt" 
+	
+:: check network configurations of host
+	ipconfig /all > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_ipconfigall.txt"
+	
+:: Check if Google.com is reachable
+	ping google.com > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_pingtest.txt"
+	
+:: Run a traceroute to check the route to Google.com
+	tracert google.com > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_tracert.txt"
+	
+:: dump host process list
+	pslist.exe > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_processlist.txt" 
+	
+:: dump the host registry 
+	reg export > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_registrydump.txt"
+	
+:: check all host services 
+	psservice.exe > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_services.txt" 
+	
+:: check installed software
+	psinfo.exe -s > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_installedsoftware.txt" 
+	
+:: gather host system information 
+	systeminfo > "C:\%USERPROFILE%\Desktop\%ComputerName%\%ComputerName%_systeminfo.txt" 
