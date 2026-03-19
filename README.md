@@ -1,19 +1,39 @@
-# security-methodology
-## Overview
-This repository is a collection of Isiah Jones security ideas, created and collected templates, tools, methodologies, experiences, projects, and research etcetera. It contains practical resources and examples to aid in turning policy, standards, regulations, guidelines and best or good practices into practical implementation. These resources were created and gathered to solve practical implementation execution problems and as my contribution to the security community. This repository also serves to demonstrate some of my knowledge, skills, abilities, interests, and experiences. 
+# Security Methodology
 
-## Content Topics
-** Threat Modeling - I created an AI agent based threat modeling analysis tool for automating some of the analytical steps in threat modeling. The tool focuses on threat modeling components, devices, and systems, particularly IoT, ICS, OT, IIoT, embedded devices and embedded systems. 
+Collection of Isiah Jones security ideas, templates, tools, methodology, experiences, projects, research, and more.
 
-** Assessments and Testing - These are templates I created from on the job experiences as well as formal trainings, education, and research. They can be used for several types of security, risk, mission assurance, threat, and vulnerability assessments as well as security testing, acceptance testing etcetera. 
+## 📋 Content Topics
 
-** Other tools, templates, and research - I share tools, research, and other templates that I have collected, learned, or created that may be helpful for someone in the community. 
+- **Threat Modeling** – An AI agent-based threat modeling analysis tool for automating analytical steps. Focuses on IoT, ICS, OT, IIoT, embedded devices, and embedded systems.
+- **Assessments and Testing** – Templates created from on-the-job experience, formal training, education, and research. Use them for security, risk, mission assurance, threat, vulnerability assessments, acceptance testing, and more.
+- **Other Tools, Templates, and Research** – A collection of helpful resources gathered, learned, or created for the security community.
 
-## Contact
-email: isiahjones@mail.com
+## 📂 Repository Structure
 
-discord: isiahjonescyber
+The repository is organized into the following directories:
 
-slack: isiahjones
+- [`AI_Tools_Research`](./AI_Tools_Research) – AI-related tools and research (including the threat modeling tool).
+- [`Commands_Scripts`](./Commands_Scripts) – Useful command-line scripts for security tasks.
+- [`Papers_Guides_Reports`](./Papers_Guides_Reports) – White papers, guides, and security reports.
+- [`Security_Research`](./Security_Research) – Various security research projects.
+- [`Testing_Assessment_Checklists_Templates`](./Testing_Assessment_Checklists_Templates) – Templates and checklists for assessments.
+- [`Podcast Interviews`](./Podcast%20Interviews) – Links to podcast appearances and interviews.
 
-<!-- GitAds-Verify: XKNPX86OCIF8BUP1C45N35UCIGPCV8ZE -->
+> 💡 *Click on any folder above to explore its contents directly.*
+
+## 🤝 Connect
+
+- **Email**: isiahjones@mail.com
+- **Discord**: `isiahjonescyber`
+- **Slack**: `isiahjones`
+
+## 💖 Support My Work
+
+If you find these resources valuable, consider sponsoring me on GitHub:
+
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/isiahjonesSTEM?label=Sponsor&logo=GitHub)](https://github.com/sponsors/isiahjonesSTEM)
+
+---
+
+## GitAds Sponsored
+[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=isiahjonesstem/security-methodology@github)](https://gitads.dev/v1/ad-track?source=isiahjonesstem/security-methodology@github)
