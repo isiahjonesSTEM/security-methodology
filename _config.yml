@@ -3,3 +3,5 @@ title: Security Methodology
 description: Tools, templates, guides, papers, scripts, research and ad hoc project services.
 google_analytics: G-8DFDTW0NV
 repository: isiahjonesSTEM/security-methodology
+baseurl: /security-methodology
+url: https://isiahjonesstem.github.io
