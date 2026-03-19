@@ -3,12 +3,3 @@ title: Security Methodology
 description: Tools, templates, papers and research by Isiah Jones
 show_downloads: true
 google_analytics: G-8DFDTVW0NV
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8DFDTVW0NV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8DFDTVW0NV');
-</script>
