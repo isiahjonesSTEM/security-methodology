@@ -16,3 +16,4 @@ discord: isiahjonescyber
 
 slack: isiahjones
 
+<!-- GitAds-Verify: XKNPX86OCIF8BUP1C45N35UCIGPCV8ZE -->
