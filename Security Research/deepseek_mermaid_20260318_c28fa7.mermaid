@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant MA as MaliciousApp
+    participant RCA as RecaptchaChimeraActivity<br/><small><i>EMB3D: PID-332 (Auth Services)<br/>Threat: TID-328 (Hardcoded Credentials)</i></small>
+    participant WV as WebView<br/><small><i>EMB3D: PID-311 (HTTP App)<br/>Threats: TID-319 (XSS), TID-323 (Path Traversal), TID-325 (HTTP Injection)</i></small>
+    participant RS as reCAPTCHA Server<br/><small><i>EMB3D: PID-41 (Network Services)<br/>Threat: TID-406 (Unauthorized Msgs/Connections)</i></small>
+    participant AS as AttackerServer
+
+    MA->>RCA: startActivity(intent with params)<br/><i>ATT&CK: T1071.001 (Web Protocols)</i>
+    Note over RCA: EMB3D Threat TID-328: Implicit trust in caller
+    RCA->>WV: loadUrl(base + "?" + params)<br/><i>ATT&CK: T1190 (Exploit Public-Facing App)</i>
+    Note over WV: EMB3D Threats TID-323/TID-325: Path/Injection via unvalidated params
+    WV->>RS: HTTP GET with redirect param
+    RS-->>WV: HTTP 302 Redirect to evil.com<br/><i>EMB3D Threat TID-406: Unauthorized redirection</i>
+    WV->>AS: GET evil.com/poc<br/><i>ATT&CK: T1071.001</i>
+    AS-->>WV: malicious HTML/JS<br/><i>ATT&CK: T1203 (Exploit for Client Execution)</i>
+    WV->>RCA: JavaScript calls RecaptchaEmbedder methods<br/><i>ATT&CK: T1059.007 (JavaScript)</i>
+    Note over RCA: EMB3D Threats TID-305/TID-318: Dangerous syscalls/insecure crypto via interface
+    RCA->>AS: exfiltrate data or execute commands<br/><i>ATT&CK: T1041 (Exfiltration Over C2)</i>

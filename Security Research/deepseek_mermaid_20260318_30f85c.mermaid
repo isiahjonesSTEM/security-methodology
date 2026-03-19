@@ -1,0 +1,38 @@
+graph TD
+    subgraph "Attacker Environment"
+        A[Malicious App]
+        Z[Malicious ZIP File<br/>containing exploit.so<br/>+ path traversal entry]
+    end
+
+    subgraph "Google Play Services (Victim Process)"
+        B[FileApkChimeraService<br/><small>EMB3D: PID-31 (Application-level software)<br/>Threat: –</small>]
+        C[FileApkService<br/><small>EMB3D: PID-311 (HTTP‑like file handling)<br/>Threat: TID-323 (Path Traversal)</small>]
+        D[Base Directory<br/><small>/data/.../modules/</small>]
+        E[Verified Modules Directory<br/><small>/data/.../chimera/verified/</small>]
+        F[Module Loader<br/><small>EMB3D: PID-3231 (Native binary execution)<br/>Threat: TID-305 (Dangerous syscalls)</small>]
+    end
+
+    A -->|Intent with action STAGE_MODULE_APKS| B
+    A -->|places ZIP in accessible location| Z
+
+    B -->|delegates to| C
+
+    C -->|reads assetName from intent| Z
+    C -->|constructs output path using entry.getName()| D
+    C -->|no validation on entry name| D
+
+    D -->|writes file via path traversal| E
+    E -->|later loaded by| F
+
+    F -->|executes exploit.so| F
+
+    %% ATT&CK mappings on edges
+    A -->|ATT&CK T1559 (Inter‑Process Communication)| B
+    C -->|ATT&CK T1190 (Exploit Public‑Facing Application)<br/>EMB3D Mitigation: Input validation, canonical path checks| D
+    C -->|ATT&CK T1203 (Exploitation for Client Execution)<br/>EMB3D Mitigation: Secure ZIP extraction (entry validation)| D
+    F -->|ATT&CK T1068 (Privilege Escalation)<br/>ATT&CK T1041 (Exfiltration Over C2)<br/>EMB3D Mitigation: Code signing, verified boot| F
+
+    %% EMB3D threat labels on components (for clarity)
+    B -.-o|"EMB3D Threat TID-323 (Path Traversal) via assetName"| C
+    C -.-o|"EMB3D Threat TID-323 (Path Traversal) via zip entry"| D
+    F -.-o|"EMB3D Threat TID-305 (Dangerous System Calls)"| F
