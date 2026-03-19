@@ -21,11 +21,11 @@ The repository is organized into the following directories:
 
 > 💡 *Click on any folder above to explore its contents directly.*
 
-## 🤝 Connect
+## 🤝🏿 Connect
 
 - **Email**: isiahjones@mail.com
 - **Linkedin**: https://www.linkedin.com/in/isiah-jones-153697392
-- **Twitter/X**: @aicyberiot
+- **Twitter/X/Instagram/Threads**: @aicyberiot
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
 
