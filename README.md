@@ -31,9 +31,13 @@ The repository is organized into the following directories:
 
 ## 💖 Support My Work
 
-If you find these resources valuable, consider sponsoring me on GitHub:
+If you find these resources valuable, consider sponsoring me directly or via GitHub Sponsors:
+
+- [View all sponsorship tiers and project services →](/security-methodology/pricing)
+- [Manage your subscription →](/security-methodology/manage) *(for existing direct monthly subscription sponsors)*
 
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/isiahjonesSTEM?label=Sponsor&logo=GitHub)](https://github.com/sponsors/isiahjonesSTEM)
+
 
 ---
 
