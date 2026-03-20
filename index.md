@@ -22,7 +22,7 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 
 - **Email**: isiahjones@mail.com
 - **Linkedin**: https://www.linkedin.com/in/isiah-jones-153697392
-- **Twitter/X/Instagram/Threads**: @aicyberiot
+- **Twitter/X/Instagram/Threads/YouTube**: @aicyberiot
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
 
