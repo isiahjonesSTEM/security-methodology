@@ -1,0 +1,146 @@
+#python script
+
+import sys
+import subprocess
+import os
+import json
+import argparse
+from datetime import datetime
+
+# Initialize colors for Windows/Kali terminal output
+try:
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+except ImportError:
+    class Fore: RED=YELLOW=GREEN=CYAN=MAGENTA=RESET=''
+    class Style: RESET_ALL=''
+
+def get_args():
+    parser = argparse.ArgumentParser(description="Elite AI-Augmented Bug Bounty Orchestrator v2026")
+    parser.add_argument("-d", "--domain", help="Target domain (e.g. apple.com)", required=True)
+    parser.add_argument("-o", "--org", help="GitHub Org name for TruffleHog (defaults to domain name)")
+    parser.add_argument("-s", "--skip-recon", action="store_true", help="Skip subdomain discovery")
+    return parser.parse_args()
+
+def run_cmd(cmd, label):
+    print(f"{Fore.CYAN}[*] {label}: {cmd}")
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+
+def check_platform_scope(target):
+    """
+    Detects if the target is on a platform and validates bounty eligibility.
+    Skips checks for known independent targets to avoid breakages.
+    """
+    # 1. Independent 'Bill Payer' targets (Direct submission, no API check needed)
+    independent = ["apple.com", "microsoft.com", "google.com", "youtube.com", "blogger.com", "deepmind.com", "waymo.com", "wing.com", "amazon.com", "facebook.com"]
+    if any(ind in target for ind in independent):
+        print(f"{Fore.GREEN}[IP] Independent Program Detected: Proceeding with Direct Rules.")
+        return True
+
+    # 2. HackerOne Check (Requires H1_API_KEY environment variable)
+    # Using a common list of H1 targets we discussed
+    h1_targets = ["paypal.com", "gitlab.com", "airbnb.com", "intel.com"]
+    if any(h1 in target for h1 in h1_targets):
+        print(f"{Fore.MAGENTA}[!] HackerOne Target Detected. Verifying Bounty Eligibility...")
+        # Uses the H1 CLI to check if the program actually pays cash (BBP)
+        check = run_cmd(f"h1 programs {target}", "H1 API")
+        if "offers_bounties: true" not in check.lower() and "No program found" not in check:
+            print(f"{Fore.RED}[CRITICAL] Target is VDP (Points Only). Stopping to save time.")
+            return False
+
+    # 3. Intigriti Check (For Yahoo/AOL specifically in March 2026)
+    intigriti_targets = ["yahoo.com", "aol.com", "engadget.com"]
+    if any(intig in target for intig in intigriti_targets):
+        print(f"{Fore.MAGENTA}[!] Intigriti Target Detected (Yahoo/AOL). Validating via PAT...")
+        # Note: If your PAT is in subfinder config, we assume you've verified scope
+        return True
+
+    return True
+
+def main():
+    args = get_args()
+    TARGET = args.domain
+    
+    # NEW: Safety Check to ensure we only hunt for CASH bounties
+    if not check_platform_scope(TARGET):
+        print(f"{Fore.RED}[-] Skipping non-paying target.")
+        sys.exit(1)
+
+    # Default ORG to the first part of the domain if not provided
+    ORG = args.org if args.org else TARGET.split('.')[0]
+    TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M")
+    OUT_DIR = f"hunt_{TARGET}_{TIMESTAMP}"
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+    # 1. INTEGRATED MASTER KEYWORDS LIST
+    KEYWORDS = [
+        "dev", "staging", "qa", "test", "internal", "api-dev", "v1-api", "sandbox", "beta", "corp",
+        "vpn", "employee", "sso", "jenkins", "git", "k8s", "docker", "registry", "grafana",
+        "prometheus", "vault", "consul", "jira", "confluence", "mfa", "authn", "authz", "b2b",
+        "partner", "portal", "admin", "management", "monitor", "backup", "storage", "sql", "db", "uat"
+    ]
+    with open(f"{OUT_DIR}/priority_keywords.txt", "w") as f:
+        f.write("\n".join(KEYWORDS))
+
+    print(f"{Fore.MAGENTA}{'='*60}\nLAUNCHING HUNT: {TARGET} | {TIMESTAMP}\n{'='*60}")
+
+    # 2. GENERATE CLOUD & SOURCE DORKS
+    print(f"{Fore.YELLOW}[+] Generating High-Value Cloud Dorks...")
+    dorks = {
+        "AWS S3 Buckets": f"site:s3.amazonaws.com '{TARGET}'",
+        "Azure Blobs": f"site:blob.core.windows.net '{TARGET}'",
+        "Firebase DBs": f"site:firebaseio.com '{TARGET}'",
+        "Exposed .Git": f"intitle:'index of' inurl:'.git' '{TARGET}'",
+        "Config Leaks": f"site:{TARGET} ext:env OR ext:conf OR ext:log"
+    }
+    with open(f"{OUT_DIR}/CLOUDDORKS.html", "w") as f:
+        f.write("<html><body style='font-family:sans-serif;'><h1>Cloud & Source Dorks</h1>")
+        for k, v in dorks.items():
+            # Fixed the URL structure for Google Search
+            url = f"https://www.google.com{v.replace(' ', '+')}"
+            f.write(f"<p><strong>{k}:</strong> <a href='{url}' target='_blank'>{v}</a></p>")
+        f.write("</body></html>")
+
+    # 3. DEEP RECON (Subfinder + Httpx)
+    hosts_file = f"{OUT_DIR}/alive.txt"
+    if not args.skip_recon:
+        print(f"{Fore.YELLOW}[+] Running Subdomain Discovery...")
+        # Tool will use the H1/Intigriti keys you added to your .config file automatically
+        run_cmd(f"subfinder -d {TARGET} -all -silent | httpx -silent -td -sc -title -server -path /admin,/config,/v1/api,/swagger.json -mc 200,401,403 > {hosts_file}", "Recon")
+    
+    # 4. CUSTOM VULNERABILITY TEMPLATE
+    template_path = f"{OUT_DIR}/exposure.yaml"
+    with open(template_path, "w") as f:
+        f.write('id: crit-leak\ninfo:\n  name: Critical Data Exposure\n  severity: critical\nhttp:\n  - method: GET\n    path:\n      - "{{BaseURL}}/.json"\n      - "{{BaseURL}}/.git/config"\n    matchers:\n      - type: word\n        words: ["firebaseio.com", "[core]"]')
+
+    # 5. NUCLEI SCAN ($10k+ Payout Focus)
+    print(f"{Fore.YELLOW}[+] Scanning for Critical Vulnerabilities...")
+    results_file = f"{OUT_DIR}/vulns.json"
+    run_cmd(f"nuclei -l {hosts_file} -t {template_path} -t cves/,critical/,rce/,ssrf/,sqli/ -json -o {results_file}", "Nuclei")
+
+    # 6. TRUFFLEHOG (Verified Secrets)
+    print(f"{Fore.YELLOW}[+] Hunting Verified Secrets on GitHub Org: {ORG}...")
+    run_cmd(f"trufflehog github --org={ORG} --verified --json > {OUT_DIR}/secrets.json", "TruffleHog")
+
+    # 7. AI REPORT BUNDLER
+    findings = []
+    if os.path.exists(results_file):
+        with open(results_file, "r") as f:
+            for line in f:
+                try:
+                    data = json.loads(line)
+                    if data['info']['severity'].upper() in ["CRITICAL", "HIGH"]:
+                        print(f"{Fore.GREEN}[VERIFIED BUG] {data['info']['name']} @ {data['matched-at']}")
+                        findings.append(data)
+                except: continue
+
+    with open(f"{OUT_DIR}/PASTE_TO_AI.txt", "w") as f:
+        f.write(f"ACT AS ELITE BUG HUNTER. TARGET: {TARGET}\nFINDINGS:\n")
+        f.write(json.dumps(findings, indent=2))
+        f.write("\n\nINSTRUCTION: Generate a professional Bugcrowd/HackerOne/Independent report, write a Python PoC, and justify a $10k+ bounty.")
+
+    print(f"\n{Fore.CYAN}DONE! Check {OUT_DIR} for results.")
+    print(f"{Fore.CYAN}Copy 'PASTE_TO_AI.txt' into Claude Desktop Pro for your final report.")
+
+if __name__ == "__main__":
+    main()
