@@ -22,7 +22,6 @@ jobs:
           BUY_BUTTON_ID_README: ${{ secrets.BUY_BUTTON_ID_README }}
           BUY_BUTTON_ID_WEBSITE: ${{ secrets.BUY_BUTTON_ID_WEBSITE }}
           BUY_BUTTON_ID_AFFILIATE: ${{ secrets.BUY_BUTTON_ID_AFFILIATE }}
-          BUY_BUTTON_ID_LICENSE: ${{ secrets.BUY_BUTTON_ID_LICENSE }}
           BUY_BUTTON_ID_ADVISORY: ${{ secrets.BUY_BUTTON_ID_ADVISORY }}
           BUY_BUTTON_ID_55K: ${{ secrets.BUY_BUTTON_ID_55K }}
           BUY_BUTTON_ID_100K: ${{ secrets.BUY_BUTTON_ID_100K }}
@@ -36,7 +35,6 @@ jobs:
           sed -i "s|{{BUY_BUTTON_ID_README}}|$BUY_BUTTON_ID_README|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_WEBSITE}}|$BUY_BUTTON_ID_WEBSITE|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_AFFILIATE}}|$BUY_BUTTON_ID_AFFILIATE|g" pricing.md
-          sed -i "s|{{BUY_BUTTON_ID_LICENSE}}|$BUY_BUTTON_ID_LICENSE|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_ADVISORY}}|$BUY_BUTTON_ID_ADVISORY|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_55K}}|$BUY_BUTTON_ID_55K|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_100K}}|$BUY_BUTTON_ID_100K|g" pricing.md
