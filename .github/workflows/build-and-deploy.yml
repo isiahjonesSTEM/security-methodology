@@ -18,47 +18,54 @@ jobs:
       - name: Replace placeholders with secrets
         env:
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-          # Monthly tiers
           BUY_BUTTON_ID_SUPPORTER: ${{ secrets.BUY_BUTTON_ID_SUPPORTER }}
           BUY_BUTTON_ID_README: ${{ secrets.BUY_BUTTON_ID_README }}
           BUY_BUTTON_ID_WEBSITE: ${{ secrets.BUY_BUTTON_ID_WEBSITE }}
           BUY_BUTTON_ID_AFFILIATE: ${{ secrets.BUY_BUTTON_ID_AFFILIATE }}
           BUY_BUTTON_ID_LICENSE: ${{ secrets.BUY_BUTTON_ID_LICENSE }}
           BUY_BUTTON_ID_ADVISORY: ${{ secrets.BUY_BUTTON_ID_ADVISORY }}
-          # New one‑time tiers
           BUY_BUTTON_ID_55K: ${{ secrets.BUY_BUTTON_ID_55K }}
           BUY_BUTTON_ID_100K: ${{ secrets.BUY_BUTTON_ID_100K }}
           BUY_BUTTON_ID_30K: ${{ secrets.BUY_BUTTON_ID_30K }}
-          # Manage page portal URL
           STRIPE_CUSTOMER_PORTAL_URL: ${{ secrets.STRIPE_CUSTOMER_PORTAL_URL }}
         run: |
           set -e
           echo "Current directory: $(pwd)"
           
-          # Process pricing.md – monthly tiers
+          # Debug: Show first 30 lines of pricing.md before changes
+          echo "=== BEFORE REPLACEMENT (first 30 lines) ==="
+          head -n 30 pricing.md
+          
+          # Process pricing.md – using perl for more reliable multiline and exact matching
           if [ -f pricing.md ]; then
             echo "Replacing placeholders in pricing.md..."
-            sed -i "s|{{STRIPE_PUBLISHABLE_KEY}}|$STRIPE_PUBLISHABLE_KEY|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_SUPPORTER}}|$BUY_BUTTON_ID_SUPPORTER|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_README}}|$BUY_BUTTON_ID_README|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_WEBSITE}}|$BUY_BUTTON_ID_WEBSITE|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_AFFILIATE}}|$BUY_BUTTON_ID_AFFILIATE|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_LICENSE}}|$BUY_BUTTON_ID_LICENSE|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_ADVISORY}}|$BUY_BUTTON_ID_ADVISORY|g" pricing.md
-            # New one‑time tiers
-            sed -i "s|{{BUY_BUTTON_ID_55K}}|$BUY_BUTTON_ID_55K|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_100K}}|$BUY_BUTTON_ID_100K|g" pricing.md
-            sed -i "s|{{BUY_BUTTON_ID_30K}}|$BUY_BUTTON_ID_30K|g" pricing.md
+            
+            # Use perl to replace exactly, handling any whitespace around braces
+            perl -i -pe 's/\{\{STRIPE_PUBLISHABLE_KEY\}\}/$ENV{STRIPE_PUBLISHABLE_KEY}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_SUPPORTER\}\}/$ENV{BUY_BUTTON_ID_SUPPORTER}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_README\}\}/$ENV{BUY_BUTTON_ID_README}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_WEBSITE\}\}/$ENV{BUY_BUTTON_ID_WEBSITE}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_AFFILIATE\}\}/$ENV{BUY_BUTTON_ID_AFFILIATE}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_LICENSE\}\}/$ENV{BUY_BUTTON_ID_LICENSE}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_ADVISORY\}\}/$ENV{BUY_BUTTON_ID_ADVISORY}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_55K\}\}/$ENV{BUY_BUTTON_ID_55K}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_100K\}\}/$ENV{BUY_BUTTON_ID_100K}/g' pricing.md
+            perl -i -pe 's/\{\{BUY_BUTTON_ID_30K\}\}/$ENV{BUY_BUTTON_ID_30K}/g' pricing.md
+            
             echo "pricing.md processed."
           else
             echo "pricing.md not found!"
             exit 1
           fi
 
+          # Debug: Show first 30 lines after replacement
+          echo "=== AFTER REPLACEMENT (first 30 lines) ==="
+          head -n 30 pricing.md
+          
           # Process manage.md
           if [ -f manage.md ]; then
             echo "Replacing placeholders in manage.md..."
-            sed -i "s|{{STRIPE_CUSTOMER_PORTAL_URL}}|$STRIPE_CUSTOMER_PORTAL_URL|g" manage.md
+            perl -i -pe 's/\{\{STRIPE_CUSTOMER_PORTAL_URL\}\}/$ENV{STRIPE_CUSTOMER_PORTAL_URL}/g' manage.md
             echo "manage.md processed."
           else
             echo "manage.md not found, skipping."
