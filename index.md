@@ -22,15 +22,12 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 
 - **Email**: isiahjones@mail.com
 - **Linkedin**: https://www.linkedin.com/in/isiah-jones-153697392
-- **Twitter/X/Instagram/Threads/YouTube**: @aicyberiot
+- **Twitter/X/Instagram/Threads**: @aicyberiot
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
 
-## 🙏🏿 Support My Work
+## 💼 Services & Pricing
 
-If you find these resources valuable or need **ad hoc project services** (publishing affiliate ads on my page, creating scripts, templates, providing security advice or troubleshooting support etcetera), please consider supporting my work directly via my pricing page or via GitHub Sponsors.
+For monthly sponsorships, security testing, assessments, gap analysis, and mitigation roadmaps, visit my pricing page:
 
-- [View all sponsorship tiers and project services →](/security-methodology/pricing)
-- [Manage your subscription →](/security-methodology/manage) *(for existing monthly subscription sponsors)*
-
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/isiahjonesSTEM?label=Sponsor&logo=GitHub)](https://github.com/sponsors/isiahjonesSTEM)
+👉 [**View Services & Pricing →**](/security-methodology/pricing)
