@@ -61,18 +61,6 @@ Below are my monthly sponsorship tiers and fixed‑scope one‑time engagements.
   </div>
 </div>
 
-<!-- Company License -->
-<div style="border:1px solid #ddd; padding:20px; margin:20px 0; border-radius:8px;">
-  <h3>Company License – $1,000/month</h3>
-  <p>Internal use license for tools/scripts/templates</p>
-  <div markdown="0">
-    <stripe-buy-button
-      buy-button-id="{{BUY_BUTTON_ID_LICENSE}}"
-      publishable-key="{{STRIPE_PUBLISHABLE_KEY}}">
-    </stripe-buy-button>
-  </div>
-</div>
-
 <!-- Advisory Retainer -->
 <div style="border:1px solid #ddd; padding:20px; margin:20px 0; border-radius:8px;">
   <h3>Advisory Retainer – $10,000/month</h3>
