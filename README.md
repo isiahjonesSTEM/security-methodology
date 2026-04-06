@@ -31,15 +31,8 @@ The repository is organized into the following directories:
 
 ## 💖 Support My Work
 
-If you find these resources valuable, consider sponsoring me directly or via GitHub Sponsors:
+If you find these resources valuable, consider sponsoring me directly:
 
 - [View all sponsorship tiers and project services →](https://isiahjonesstem.github.io/security-methodology/pricing)
 - [Manage your subscription →](https://isiahjonesstem.github.io/security-methodology/manage) *(for existing direct monthly subscription sponsors)*
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/isiahjonesSTEM?label=Sponsor&logo=GitHub)](https://github.com/sponsors/isiahjonesSTEM)
-
-
----
-
-## GitAds Sponsored
-[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=isiahjonesstem/security-methodology@github)](https://gitads.dev/v1/ad-track?source=isiahjonesstem/security-methodology@github)
