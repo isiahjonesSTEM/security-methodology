@@ -30,9 +30,6 @@ jobs:
           STRIPE_CUSTOMER_PORTAL_URL: ${{ secrets.STRIPE_CUSTOMER_PORTAL_URL }}
         run: |
           set -e
-          echo "Current directory: $(pwd)"
-          
-          # Replace all placeholders in pricing.md using sed (same method that worked before)
           sed -i "s|{{STRIPE_PUBLISHABLE_KEY}}|$STRIPE_PUBLISHABLE_KEY|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_SUPPORTER}}|$BUY_BUTTON_ID_SUPPORTER|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_README}}|$BUY_BUTTON_ID_README|g" pricing.md
@@ -43,16 +40,13 @@ jobs:
           sed -i "s|{{BUY_BUTTON_ID_55K}}|$BUY_BUTTON_ID_55K|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_100K}}|$BUY_BUTTON_ID_100K|g" pricing.md
           sed -i "s|{{BUY_BUTTON_ID_30K}}|$BUY_BUTTON_ID_30K|g" pricing.md
-          
-          # Replace placeholder in manage.md
           if [ -f manage.md ]; then
             sed -i "s|{{STRIPE_CUSTOMER_PORTAL_URL}}|$STRIPE_CUSTOMER_PORTAL_URL|g" manage.md
           fi
-          
-          # Debug: verify that no placeholders remain
-          echo "=== Checking for any remaining placeholders ==="
-          grep -n "{{" pricing.md || echo "No placeholders found in pricing.md"
-          grep -n "{{" manage.md 2>/dev/null || echo "No placeholders found in manage.md"
+          # Verify no placeholders left
+          echo "=== Checking for remaining placeholders in source files ==="
+          grep -n "{{" pricing.md || echo "No placeholders in pricing.md"
+          grep -n "{{" manage.md 2>/dev/null || echo "No placeholders in manage.md"
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -63,11 +57,21 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Clean Jekyll cache
+        run: rm -rf .jekyll-cache _site
+
       - name: Build Jekyll site
         run: bundle exec jekyll build
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: isiahjonesSTEM/security-methodology
+
+      - name: Verify built HTML
+        run: |
+          echo "=== Checking _site/pricing.html for placeholders ==="
+          grep -n "{{" _site/pricing.html || echo "No placeholders found in built HTML"
+          echo "=== First 100 lines of _site/pricing.html ==="
+          head -n 100 _site/pricing.html
 
       - name: Upload built site as artifact
         uses: actions/upload-pages-artifact@v3
