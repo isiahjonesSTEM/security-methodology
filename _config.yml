@@ -5,3 +5,7 @@ google_analytics: G-8DFDTW0NV
 repository: isiahjonesSTEM/security-methodology
 baseurl: /security-methodology
 url: https://isiahjonesstem.github.io
+include:
+  - photos
+keep_files:
+  - photos  
