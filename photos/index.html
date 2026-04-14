@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Gallery - Security Methodology</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      background: #f4f4f9;
+      color: #333;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      text-decoration: none;
+      color: #157878;
+      font-weight: bold;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .gallery-item {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .gallery-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+    /* Lightbox (fullscreen overlay) */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .lightbox.active {
+      display: flex;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="/security-methodology/" class="back-link">← Back to Home</a>
+  <h1>📸 Photos in the field</h1>
+  <p>Click any image to enlarge.</p>
+
+  <div class="gallery" id="gallery">
+    <!-- =========================================================== -->
+    <!-- ADD YOUR PHOTOS HERE – one block per image                 -->
+    <!-- Replace 'your-photo-name.jpg' with the actual file name    -->
+    <!-- =========================================================== -->
+    
+    <div class="gallery-item">
+      <img src="135.PNG" alt="Photo 1">
+    </div>
+    <div class="gallery-item">
+      <img src="180.JPG" alt="Photo 2">
+    </div>
+    <div class="gallery-item">
+      <img src="181.JPG" alt="Photo 3">
+    </div>
+	<div class="gallery-item">
+      <img src="Pharma customer.jpg" alt="Photo 3">
+    </div>
+	<div class="gallery-item">
+      <img src="UAE yokogawa adnoc.jpg" alt="Photo 3">
+    </div>
+
+
+    <!-- Duplicate the line above for each new photo, and change the filename and alt text -->
+    
+  </div>
+</div>
+
+<!-- Lightbox overlay -->
+<div id="lightbox" class="lightbox">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  // Lightbox functionality
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+
+  galleryItems.forEach(item => {
+    const img = item.querySelector('img');
+    item.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightbox.classList.add('active');
+    });
+  });
+
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+    lightboxImg.src = '';
+  });
+</script>
+
+<footer>
+  <p>Security Methodology – Photos</p>
+</footer>
+</body>
+</html>

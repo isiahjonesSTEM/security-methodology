@@ -26,6 +26,10 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 - **Discord**: `isiahjonescyber`
 - **Slack**: `isiahjones`
 
+## 📸 Photos
+
+Check out my [photo gallery](/photos/).
+
 ## 💼 Services & Pricing
 
 For monthly sponsorships, security testing, assessments, gap analysis, and mitigation roadmaps, visit my pricing page:
