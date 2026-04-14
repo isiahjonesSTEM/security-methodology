@@ -28,7 +28,7 @@ This site hosts the documentation for the resources found in my [GitHub reposito
 
 ## 📸 Photos
 
-Check out my [photo gallery](/photos/).
+Check out my - [📸 Photos in the field](/security-methodology/photos/).
 
 ## 💼 Services & Pricing
 
