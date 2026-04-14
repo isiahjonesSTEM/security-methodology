@@ -12,7 +12,7 @@ Collection of Isiah Jones security ideas, templates, tools, methodology, experie
 
 The repository is organized into the following directories:
 
-- [Check out my Home Page](isiahjonesestem.github.io/security-methodology/)
+- [Check out my Home Page](isiahjonesstem.github.io/security-methodology/)
 - [`AI_Tools_Research`](./AI_Tools_Research) – AI-related tools and research (including the threat modeling tool).
 - [`Commands_Scripts`](./Commands_Scripts) – Useful command-line scripts for security tasks.
 - [`Papers_Guides_Reports`](./Papers_Guides_Reports) – White papers, guides, and security reports.
