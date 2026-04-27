@@ -120,4 +120,82 @@ Below are my monthly sponsorship tiers and fixed‑scope one‑time engagements.
 
 ---
 
+## 💻 One‑Time Perpetual License (Software Tools)
+
+**Perpetual, non‑expiring license for unlimited users within your organization.**  
+*As‑is, limited initial support for minor updates due to tool errors. No additional update obligations. Future major versions require a new license. Additional Support Services can be purchased through other listed services.*
+
+<style>
+  .license-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+  .license-table th, .license-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+  .license-table th {
+    background-color: #2c3e50;
+    color: white;
+  }
+  .btn-link {
+    display: inline-block;
+    background-color: #2c3e50;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  .btn-link:hover {
+    background-color: #1a2a3a;
+  }
+</style>
+
+<table class="license-table">
+  <thead>
+    <tr>
+      <th>Organization Size</th>
+      <th>Employees</th>
+      <th>One‑Time Price (USD)</th>
+      <th>Payment Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Individual</td>
+      <td>1 (freelance / independent)</td>
+      <td>$1,500</td>
+      <td><a href="https://buy.stripe.com/7sY8wO7pc8J17Yu9it3Ru0c" class="btn-link" target="_blank">Pay $1,500</a></td>
+    </tr>
+    <tr>
+      <td>Small Business</td>
+      <td>≤ 50 Employees</td>
+      <td>$5,000</td>
+      <td><a href="https://buy.stripe.com/8x2dR88tggbt1A6dyJ3Ru0d" class="btn-link" target="_blank">Pay $5,000</a></td>
+    </tr>
+    <tr>
+      <td>Mid‑Large Organization</td>
+      <td>51 – 10,000 Employees</td>
+      <td>$15,000</td>
+      <td><a href="https://buy.stripe.com/4gMbJ038WaR94MigKV3Ru0e" class="btn-link" target="_blank">Pay $15,000</a></td>
+    </tr>
+    <tr>
+      <td>Large Enterprise</td>
+      <td>10,001 – 100,000 Employees</td>
+      <td>$30,000</td>
+      <td><a href="https://buy.stripe.com/aFa5kCeRE2kD3IedyJ3Ru0f" class="btn-link" target="_blank">Pay $30,000</a></td>
+    </tr>
+    <tr>
+      <td>Mega Enterprise</td>
+      <td>100,001+ Employees</td>
+      <td>$55,000</td>
+      <td><a href="https://buy.stripe.com/aFaeVc10O7EX0w2bqB3Ru0g" class="btn-link" target="_blank">Pay $55,000</a></td>
+    </tr>
+  </tbody>
+</table>
+---
+
 <p style="margin-top: 40px; font-style: italic;">After payment, you'll receive confirmation via email. I'll contact you within 24 hours to onboard you.</p>
