@@ -75,7 +75,7 @@ Below are my monthly sponsorship tiers and fixed‑scope one‑time engagements.
 
 ---
 
-## 🛠️ One‑Time Engagements (Fixed Scope, Fixed Deliverable)
+## 🛠️ One‑Time Services Engagements (Fixed Scope, Fixed Deliverable)
 
 <!-- 1-2 weeks -->
 <div style="border:1px solid #ddd; padding:20px; margin:20px 0; border-radius:8px;">
@@ -119,8 +119,8 @@ Below are my monthly sponsorship tiers and fixed‑scope one‑time engagements.
 <script async src="https://js.stripe.com/v3/buy-button.js"></script>
 
 ---
-
-## 💻 One‑Time Perpetual License (Software Tools)
+{% raw %}
+## 💻 One‑Time Perpetual Software License (Software Tools)
 
 **Perpetual, non‑expiring license for unlimited users within your organization.**  
 *As‑is, limited initial support for minor updates due to tool errors. No additional update obligations. Future major versions require a new license. Additional Support Services can be purchased through other listed services.*
@@ -196,6 +196,7 @@ Below are my monthly sponsorship tiers and fixed‑scope one‑time engagements.
     </tr>
   </tbody>
 </table>
+{% endraw %}
 ---
 
 <p style="margin-top: 40px; font-style: italic;">After payment, you'll receive confirmation via email. I'll contact you within 24 hours to onboard you.</p>
