@@ -9,3 +9,5 @@ include:
   - photos
 keep_files:
   - photos  
+exclude:
+  - Security_Research/DeepHunter_https___pentest-ground.com_20260417_163618
