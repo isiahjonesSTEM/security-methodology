@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICS/OT/IoT/CPS Cyber Decision Diagrams & Threat Models</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+:root{--navy:#1B3A5C;--blue:#2E75B6;--bg:#F8FAFC;--card:#FFF;--text:#1A202C;--muted:#718096;--crit:#C0392B;--high:#E74C3C;--med:#F39C12;--low:#27AE60}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text)}
+.header{background:linear-gradient(135deg,var(--navy),#2C3E50);color:#fff;padding:20px 28px}.header h1{font-size:20px}.header p{color:#94A3B8;font-size:12px}
+.nav{display:flex;background:var(--navy);padding:0 28px;overflow-x:auto;flex-wrap:nowrap}
+.nb{padding:10px 16px;color:#94A3B8;cursor:pointer;border:none;border-bottom:3px solid transparent;font-size:12px;font-weight:600;white-space:nowrap;background:transparent;transition:.2s}.nb:hover{color:#fff}.nb.active{color:#fff;border-bottom-color:var(--med)}
+.main{padding:20px 28px;max-width:1300px;margin:0 auto}
+.section{display:block} /* ALL VISIBLE for Mermaid rendering */
+.section.hidden{display:none}
+.dc{background:var(--card);border-radius:6px;padding:18px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.dc h3{font-size:15px;color:var(--navy);margin-bottom:4px}.dc .sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.dc .sc{background:#F1F5F9;border-left:4px solid var(--blue);padding:10px 14px;margin-bottom:14px;border-radius:0 4px 4px 0;font-size:12px;line-height:1.6}.dc .sc strong{color:var(--navy)}
+.mermaid{margin:12px 0;overflow-x:auto}
+.lg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #E2E8F0}.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}.ld{width:10px;height:10px;border-radius:2px}
+.rt{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}.rt th{background:var(--navy);color:#fff;padding:5px 8px;text-align:left}.rt td{padding:4px 8px;border-bottom:1px solid #E2E8F0}.rt tr:nth-child(even){background:#F7FAFC}
+.pb{position:fixed;bottom:16px;right:16px;background:var(--navy);color:#fff;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:100;font-size:13px}
+@media print{.nav,.pb{display:none}.section{display:block!important}.main{padding:0}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Cyber Decision Diagrams, Bowtie Diagrams & Threat Models</h1>
+<p>ICS/OT/IoT/CPS — ISA 84.00.09 Ed.3 | Real-World Scenarios | MITRE ATT&CK for ICS | All System Types</p>
+</div>
+<div class="nav">
+<button class="nb active" data-s="s1">1. SIS (TRITON)</button>
+<button class="nb" data-s="s2">2. PLC (Stuxnet)</button>
+<button class="nb" data-s="s3">3. SCADA (Ukraine)</button>
+<button class="nb" data-s="s4">4. Ransomware (EKANS)</button>
+<button class="nb" data-s="s5">5. IoT Pivot</button>
+<button class="nb" data-s="s6">6. Supply Chain (PIPEDREAM)</button>
+<button class="nb" data-s="s7">7. BAS/HVAC</button>
+<button class="nb" data-s="s8">8. Bowtie Diagrams</button>
+<button class="nb" data-s="s9">9. Req Mapping</button>
+</div>
+<button class="pb" onclick="window.print()">Print All / PDF</button>
+<div class="main">
+
+<div class="section" id="s1"><div class="dc">
+<h3>Scenario 1: Safety Instrumented System Compromise (TRITON/TRISIS)</h3>
+<div class="sub">Real-World: TRITON attack on Schneider Electric Triconex SIS at Saudi petrochemical facility (2017)</div>
+<div class="sc"><strong>HCE:</strong> Loss of safety instrumented function — explosion, toxic release, loss of life<br><strong>Systems:</strong> SIS (Triconex), BPCS/DCS, Engineering Workstations<br><strong>Actor:</strong> Nation-State APT (XENOTIME)<br><strong>ATT&CK ICS:</strong> T0865, T0859, T0867, T0843, T0821, T0880</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff,stroke:#922B21
+  classDef vuln fill:#E74C3C,color:#fff,stroke:#C0392B
+  classDef ctrl fill:#27AE60,color:#fff,stroke:#1E8449
+  classDef impact fill:#8E44AD,color:#fff,stroke:#6C3483
+  classDef dec fill:#F39C12,color:#fff,stroke:#D68910
+  A[/"XENOTIME APT"/]:::threat
+  B["Spearphishing T0865"]:::vuln
+  C{"Email Security?"}:::dec
+  D["RAT on IT Network"]:::vuln
+  E{"IT/OT Segmentation?"}:::dec
+  F["Pivot to EWS T0867"]:::vuln
+  G{"EWS Access Control?"}:::dec
+  H["Enumerate SIS via TriStation"]:::vuln
+  I{"Protocol Monitoring?"}:::dec
+  J["Upload Malicious SIS Logic T0843"]:::vuln
+  K{"Config Change Detection?"}:::dec
+  L["IMPACT: Loss of Safety T0880"]:::impact
+  M1["Email filtering, sandboxing"]:::ctrl
+  M2["Industrial firewall, data diode"]:::ctrl
+  M3["MFA, app whitelisting, PAM"]:::ctrl
+  M4["TriStation IDS, baseline"]:::ctrl
+  M5["SIS audit, key lock, FW signing"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|No|F
+  E-->|Yes|M2
+  F-->G
+  G-->|Weak|H
+  G-->|Strong|M3
+  H-->I
+  I-->|No|J
+  I-->|Yes|M4
+  J-->K
+  K-->|No|L
+  K-->|Yes|M5
+</div>
+<div class="lg"><div class="li"><div class="ld" style="background:#C0392B"></div>Threat</div><div class="li"><div class="ld" style="background:#E74C3C"></div>Attack Step</div><div class="li"><div class="ld" style="background:#F39C12"></div>Decision Point</div><div class="li"><div class="ld" style="background:#27AE60"></div>Control</div><div class="li"><div class="ld" style="background:#8E44AD"></div>Impact</div></div>
+</div></div>
+
+<div class="section" id="s2"><div class="dc">
+<h3>Scenario 2: PLC Logic Manipulation (Stuxnet-Style)</h3>
+<div class="sub">Real-World: Stuxnet targeting Siemens S7-300/400 PLCs at Natanz (2010)</div>
+<div class="sc"><strong>HCE:</strong> Unauthorized PLC logic modification causing equipment destruction<br><strong>Systems:</strong> PLCs (Siemens S7), SCADA, EWS, WinCC HMI, Step 7 Projects<br><strong>Actor:</strong> Nation-State<br><strong>ATT&CK ICS:</strong> T0847, T0862, T0845, T0836, T0831</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  A[/"Nation-State"/]:::threat
+  B["USB Drive T0847"]:::vuln
+  C{"USB Control Policy?"}:::dec
+  D["Zero-Day Exploits x4"]:::vuln
+  E{"Endpoint Hardening?"}:::dec
+  F["Network Share Propagation"]:::vuln
+  G{"Segmentation + FIM?"}:::dec
+  H["Discover S7-315/417 PLCs"]:::vuln
+  I{"Asset Inventory + Protocol Monitor?"}:::dec
+  J["Upload Modified OB35 T0836"]:::vuln
+  K{"PLC Logic Change Detection?"}:::dec
+  L["IMPACT: Centrifuge Destruction T0831"]:::impact
+  M1["USB blocking, device whitelist"]:::ctrl
+  M2["App whitelist, patching, HIDS"]:::ctrl
+  M3["Air gap, network monitor, FIM"]:::ctrl
+  M4["OT asset mgmt, S7comm DPI"]:::ctrl
+  M5["PLC snapshot compare, key switch"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|Weak|F
+  E-->|Strong|M2
+  F-->G
+  G-->|No|H
+  G-->|Yes|M3
+  H-->I
+  I-->|No|J
+  I-->|Yes|M4
+  J-->K
+  K-->|No|L
+  K-->|Yes|M5
+</div></div></div>
+
+<div class="section" id="s3"><div class="dc">
+<h3>Scenario 3: SCADA Disruption — Power Grid Attack</h3>
+<div class="sub">Real-World: Ukraine 2015 (BlackEnergy) and 2016 (Industroyer/CrashOverride)</div>
+<div class="sc"><strong>HCE:</strong> Unauthorized breaker opening — 225,000+ customer blackout<br><strong>Systems:</strong> SCADA, RTUs, Substation IEDs, HMI, VPN<br><strong>Actor:</strong> Sandworm/ELECTRUM<br><strong>ATT&CK ICS:</strong> T0865, T0822, T0859, T0855, T0814, T0813</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  A[/"Sandworm APT"/]:::threat
+  B["Spearphishing T0865"]:::vuln
+  C{"Email + Macro Controls?"}:::dec
+  D["Keylogger harvests VPN creds"]:::vuln
+  E{"MFA on VPN?"}:::dec
+  F["VPN into SCADA T0822"]:::vuln
+  G{"VPN Segmentation?"}:::dec
+  H["HMI takeover - open breakers T0855"]:::vuln
+  I{"Command Auth + Rate Limit?"}:::dec
+  J["KillDisk + UPS attack T0814"]:::vuln
+  K["IMPACT: 6hr blackout T0813"]:::impact
+  M1["Email filtering, macro disable"]:::ctrl
+  M2["Hardware MFA, session limits"]:::ctrl
+  M3["OT VPN segment, jump host"]:::ctrl
+  M4["IEC 104 validation, operator confirm"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|No|F
+  E-->|Yes|M2
+  F-->G
+  G-->|No|H
+  G-->|Yes|M3
+  H-->I
+  I-->|No|J-->K
+  I-->|Yes|M4
+</div></div></div>
+
+<div class="section" id="s4"><div class="dc">
+<h3>Scenario 4: ICS Ransomware (EKANS/Snake)</h3>
+<div class="sub">Real-World: EKANS targeting Honda/Fresenius (2020), Colonial Pipeline (2021)</div>
+<div class="sc"><strong>HCE:</strong> Encryption of HMI/historian/MES forcing production shutdown<br><strong>Systems:</strong> HMI, Historian, MES, EWS, IT/OT Boundary, Domain Controllers<br><strong>Actor:</strong> Cybercriminal (RaaS)<br><strong>ATT&CK ICS:</strong> T0819, T0859, T0809, T0826</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  A[/"RaaS Operator"/]:::threat
+  B["Exploit RDP/VPN T0819"]:::vuln
+  C{"Internet Service Hardening?"}:::dec
+  D["Domain Admin via AD exploit"]:::vuln
+  E{"AD Tiering + PAM?"}:::dec
+  F["Propagate to OT network"]:::vuln
+  G{"IT/OT DMZ + Data Diode?"}:::dec
+  H["EKANS kills ICS processes"]:::vuln
+  I{"App Whitelisting?"}:::dec
+  J["Encrypt HMI/Historian/EWS"]:::vuln
+  K{"Offline Backups + Recovery?"}:::dec
+  L["IMPACT: Production Shutdown T0826"]:::impact
+  M1["No internet exposure, VPN+MFA"]:::ctrl
+  M2["Tiered AD, PAM, LAPS"]:::ctrl
+  M3["Industrial DMZ, data diode"]:::ctrl
+  M4["App whitelisting, EDR"]:::ctrl
+  M5["Air-gapped backups, tested restore"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|Weak|F
+  E-->|Strong|M2
+  F-->G
+  G-->|No|H
+  G-->|Yes|M3
+  H-->I
+  I-->|No|J
+  I-->|Yes|M4
+  J-->K
+  K-->|No|L
+  K-->|Yes|M5
+</div></div></div>
+
+<div class="section" id="s5"><div class="dc">
+<h3>Scenario 5: IoT Device Exploitation & Lateral Pivot</h3>
+<div class="sub">Real-World: Mirai variants, Verkada camera breach (2021), Oldsmar water treatment (2021)</div>
+<div class="sc"><strong>HCE:</strong> IoT gateway compromise pivoting to control network<br><strong>Systems:</strong> IoT Gateways, Smart Sensors, Edge Devices, Wireless APs, BPCS, SCADA<br><strong>Actor:</strong> Hacktivist / APT<br><strong>ATT&CK ICS + EMB3D:</strong> T0860, T0883, T0839, T0866</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  classDef emb fill:#3498DB,color:#fff
+  A[/"Hacktivist / APT"/]:::threat
+  B["Shodan scan for IoT T0883"]:::vuln
+  C{"Exposure Audit?"}:::dec
+  D["Default creds on gateway"]:::emb
+  E{"Credential Hardening?"}:::dec
+  F["Backdoored firmware T0839"]:::emb
+  G{"Firmware Signing + Secure Boot?"}:::dec
+  H["Pivot to control VLAN T0866"]:::vuln
+  I{"IoT Micro-segmentation?"}:::dec
+  J["Modify Modbus setpoints T0831"]:::vuln
+  K["IMPACT: Chemical dosing manipulation"]:::impact
+  M1["No IoT on internet, Shodan monitor"]:::ctrl
+  M2["Unique creds, cert-based auth"]:::ctrl
+  M3["Signed FW, secure boot chain"]:::ctrl
+  M4["IoT in separate zone, protocol GW"]:::ctrl
+  A-->B-->C
+  C-->|Exposed|D
+  C-->|Hidden|M1
+  D-->E
+  E-->|Defaults|F
+  E-->|Hardened|M2
+  F-->G
+  G-->|Unsigned|H
+  G-->|Signed|M3
+  H-->I
+  I-->|Flat|J-->K
+  I-->|Segmented|M4
+</div></div></div>
+
+<div class="section" id="s6"><div class="dc">
+<h3>Scenario 6: Supply Chain Attack (PIPEDREAM/INCONTROLLER)</h3>
+<div class="sub">Real-World: PIPEDREAM targeting Schneider/OMRON PLCs (2022), CHERNOVITE APT</div>
+<div class="sc"><strong>HCE:</strong> Multi-vendor PLC/RTU attack toolkit via OPC UA, Modbus, CODESYS<br><strong>Systems:</strong> Schneider Modicon, OMRON NX/NJ, OPC UA Servers, CODESYS Controllers<br><strong>Actor:</strong> CHERNOVITE APT<br><strong>ATT&CK ICS:</strong> T0862, T0845, T0843, T0836, T0827</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  A[/"CHERNOVITE APT"/]:::threat
+  B["ICS attack framework T0862"]:::vuln
+  C{"Supply Chain Integrity?"}:::dec
+  D["Compromised vendor update"]:::vuln
+  E{"Vendor Access Control?"}:::dec
+  F["OPC UA enumeration"]:::vuln
+  G{"OPC UA Auth + Certs?"}:::dec
+  H["Modicon/CODESYS logic upload"]:::vuln
+  I{"Protocol DPI + Logic Detection?"}:::dec
+  J["OMRON HTTP API backdoor"]:::vuln
+  K{"Device Hardening?"}:::dec
+  L["IMPACT: Multi-site shutdown T0827"]:::impact
+  M1["SBOM verification, secure updates"]:::ctrl
+  M2["Vendor VPN + session recording"]:::ctrl
+  M3["OPC UA cert pinning, audit"]:::ctrl
+  M4["ICS protocol DPI, logic compare"]:::ctrl
+  M5["Disable web UI, FW hardening"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|Weak|F
+  E-->|Strong|M2
+  F-->G
+  G-->|Weak|H
+  G-->|Strong|M3
+  H-->I
+  I-->|No|J
+  I-->|Yes|M4
+  J-->K
+  K-->|No|L
+  K-->|Yes|M5
+</div></div></div>
+
+<div class="section" id="s7"><div class="dc">
+<h3>Scenario 7: Building Automation / HVAC Compromise</h3>
+<div class="sub">Real-World: Target HVAC breach (2013), German steel mill (2014), Finnish heating failure (2016)</div>
+<div class="sc"><strong>HCE:</strong> HVAC manipulation causing environmental hazard in critical facility<br><strong>Systems:</strong> BAS/BMS Controllers, HVAC, Chillers, BACnet/LonWorks, EMS<br><strong>Actor:</strong> Cybercriminal / Insider<br><strong>ATT&CK ICS:</strong> T0822, T0812, T0855, T0831</div>
+<div class="mermaid">
+graph TD
+  classDef threat fill:#C0392B,color:#fff
+  classDef vuln fill:#E74C3C,color:#fff
+  classDef ctrl fill:#27AE60,color:#fff
+  classDef impact fill:#8E44AD,color:#fff
+  classDef dec fill:#F39C12,color:#fff
+  A[/"Cybercriminal via HVAC Vendor"/]:::threat
+  B["Compromised vendor VPN T0822"]:::vuln
+  C{"BAS Network Segmented?"}:::dec
+  D["BACnet device enumeration"]:::vuln
+  E{"BACnet Secured?"}:::dec
+  F["Default creds on BAS T0812"]:::vuln
+  G{"Credential Management?"}:::dec
+  H["Modify HVAC setpoints T0831"]:::vuln
+  I{"Setpoint Limits + Alarms?"}:::dec
+  J["IMPACT: Overheat / equipment failure"]:::impact
+  M1["Dedicated BAS network, jump host"]:::ctrl
+  M2["BACnet/SC, protocol monitoring"]:::ctrl
+  M3["Unique passwords, access logging"]:::ctrl
+  M4["HW setpoint limits, safety interlocks"]:::ctrl
+  A-->B-->C
+  C-->|No|D
+  C-->|Yes|M1
+  D-->E
+  E-->|No|F
+  E-->|Yes|M2
+  F-->G
+  G-->|Defaults|H
+  G-->|Unique|M3
+  H-->I
+  I-->|No|J
+  I-->|Yes|M4
+</div></div></div>
+
+<div class="section" id="s8"><div class="dc">
+<h3>Bowtie Diagram — Generic ICS/OT Cyber Security Risk Model</h3>
+<div class="sub">Applicable to all system types: SIS, BPCS, DCS, PLC, RTU, SCADA, HMI, IoT, BAS, FGS</div>
+<div class="mermaid">
+graph LR
+  classDef threat fill:#C0392B,color:#fff
+  classDef barrier fill:#2E75B6,color:#fff
+  classDef event fill:#F39C12,color:#fff,stroke:#D68910,stroke-width:3px
+  classDef consequence fill:#8E44AD,color:#fff
+  classDef recovery fill:#27AE60,color:#fff
+  T1["External Remote Attack"]:::threat
+  T2["Insider Threat"]:::threat
+  T3["Supply Chain Compromise"]:::threat
+  T4["Physical Access Exploit"]:::threat
+  PB1["Network Segmentation"]:::barrier
+  PB2["Access Control MFA+RBAC"]:::barrier
+  PB3["Supply Chain Verification"]:::barrier
+  PB4["Physical Security"]:::barrier
+  PB5["Endpoint Hardening"]:::barrier
+  EVENT(["HAZARD: Unauthorized Control System Access"]):::event
+  MB1["ICS IDS/IPS"]:::recovery
+  MB2["Independent Safety System"]:::recovery
+  MB3["Backup and Recovery"]:::recovery
+  MB4["Incident Response Plan"]:::recovery
+  MB5["Manual Override"]:::recovery
+  C1["Safety Incident"]:::consequence
+  C2["Environmental Release"]:::consequence
+  C3["Production Shutdown"]:::consequence
+  C4["Data Loss / IP Theft"]:::consequence
+  T1-->PB1-->EVENT
+  T2-->PB2-->EVENT
+  T3-->PB3-->EVENT
+  T4-->PB4-->EVENT
+  PB5-->EVENT
+  EVENT-->MB1-->C1
+  EVENT-->MB2-->C2
+  EVENT-->MB3-->C3
+  EVENT-->MB4-->C4
+  MB5-->C1
+</div>
+</div>
+<div class="dc">
+<h3>Bowtie Diagram — Safety System (SIS/FGS) Specific</h3>
+<div class="mermaid">
+graph LR
+  classDef threat fill:#C0392B,color:#fff
+  classDef barrier fill:#2E75B6,color:#fff
+  classDef event fill:#F39C12,color:#fff,stroke:#D68910,stroke-width:3px
+  classDef consequence fill:#8E44AD,color:#fff
+  classDef recovery fill:#27AE60,color:#fff
+  T1["Cyber Attack on SIS"]:::threat
+  T2["Malicious Logic Upload"]:::threat
+  T3["SIS Protocol Exploit"]:::threat
+  PB1["SIS Separate Network"]:::barrier
+  PB2["Physical Key Lock"]:::barrier
+  PB3["SIS Protocol Monitoring"]:::barrier
+  PB4["Independent SIS EWS"]:::barrier
+  EVENT(["SIS COMPROMISE"]):::event
+  MB1["Independent Process Shutdown"]:::recovery
+  MB2["Mechanical Safety - PSVs"]:::recovery
+  MB3["Operator Manual ESD"]:::recovery
+  MB4["Emergency Response Plan"]:::recovery
+  C1["Explosion / Fire"]:::consequence
+  C2["Toxic Release"]:::consequence
+  C3["Loss of Containment"]:::consequence
+  T1-->PB1-->EVENT
+  T2-->PB2-->EVENT
+  T3-->PB3-->EVENT
+  PB4-->EVENT
+  EVENT-->MB1-->C1
+  EVENT-->MB2-->C2
+  EVENT-->MB3-->C3
+  MB4-->C1
+</div></div></div>
+
+<div class="section" id="s9"><div class="dc">
+<h3>Security Requirements Mapping — ISA 84.00.09 to Multi-Framework</h3>
+<div class="sub">Cross-reference: ISA/IEC 62443 (Parts 4-1, 2-1, 3-3, 4-2), NIST SP 800-82, ISA 84.00.09</div>
+<table class="rt">
+<tr><th>ISA 84.00.09 Phase</th><th>62443-3-3 (System)</th><th>62443-4-2 (Component)</th><th>62443-4-1 (Secure Dev)</th><th>62443-2-1 (CSMS)</th><th>NIST 800-82</th></tr>
+<tr><td>Phase 1: Initial CSA</td><td>SR 1.1-1.13 (IAC)</td><td>CR 1.1-1.14</td><td>--</td><td>4.2 Risk Assessment</td><td>Sec 6.2</td></tr>
+<tr><td>Phase 2: Detailed CRA</td><td>All FRs evaluated</td><td>All CRs evaluated</td><td>SD-1 Security Context</td><td>4.2.3 Detailed RA</td><td>Sec 6.2.6</td></tr>
+<tr><td>Phase 3: Requirements</td><td>SR/RE requirements</td><td>CR/RE requirements</td><td>SR-1 Security Reqs</td><td>4.3.4 Requirements</td><td>Sec 6.3</td></tr>
+<tr><td>Phase 4: Design</td><td>SL-T per zone</td><td>SL-C verification</td><td>SD-2, SD-3, SD-4</td><td>4.3.5 Design</td><td>Sec 6.4</td></tr>
+<tr><td>Phase 5: Implementation</td><td>--</td><td>--</td><td>SI-1, SI-2</td><td>4.3.6 Implementation</td><td>Sec 6.5</td></tr>
+<tr><td>Phase 6: V&V</td><td>SL-A verification</td><td>Component verify</td><td>SVV-1 to SVV-5</td><td>4.3.7 V&V</td><td>Sec 6.6</td></tr>
+<tr><td>Phase 7: Operations</td><td>Monitoring</td><td>Patch mgmt</td><td>DM-1 to DM-5</td><td>4.4 CSMS Ops</td><td>Sec 6.7</td></tr>
+<tr><td>Phase 8: Mod/Decom</td><td>Re-assessment</td><td>Secure disposal</td><td>--</td><td>4.5 Mod Management</td><td>Sec 6.8</td></tr>
+<tr><td>KPIs (Annex L)</td><td>SL achievement</td><td>Component compliance</td><td>Maturity metrics</td><td>4.4.4 KPIs</td><td>Continuous monitoring</td></tr>
+</table>
+</div>
+<div class="dc">
+<h3>Lifecycle Phase Relationship Diagram</h3>
+<div class="mermaid">
+graph TB
+  classDef phase fill:#1B3A5C,color:#fff
+  classDef kpi fill:#F39C12,color:#fff
+  classDef loop fill:#27AE60,color:#fff
+  P1["Phase 1: Initial CSA"]:::phase
+  P2["Phase 2: Detailed CRA"]:::phase
+  P3["Phase 3: Security Requirements"]:::phase
+  P4["Phase 4: Design"]:::phase
+  P5["Phase 5: Implementation"]:::phase
+  P6["Phase 6: V&V"]:::phase
+  P7["Phase 7: Operations"]:::phase
+  P8["Phase 8: Mod/Decom"]:::phase
+  KPI["Annex L KPIs: Continuous Measurement"]:::kpi
+  LOOP["Continuous Improvement"]:::loop
+  P1-->P2-->P3-->P4-->P5-->P6-->P7-->P8
+  P8-->|Re-assessment|P1
+  KPI-->|Feeds all|P1
+  KPI-->P7
+  P7-->|Findings|KPI
+  P6-->|Test results|KPI
+  LOOP-->P1
+  LOOP-->P3
+  LOOP-->P6
+</div></div></div>
+
+</div>
+<script>
+// Initialize Mermaid - all sections are visible during load
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: { fontSize: '13px', fontFamily: 'Segoe UI, Arial' },
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+});
+
+// After Mermaid renders, hide non-active sections
+window.addEventListener('load', function() {
+  // Give Mermaid time to render all diagrams
+  setTimeout(function() {
+    document.querySelectorAll('.section').forEach(function(s) {
+      if (s.id !== 's1') s.classList.add('hidden');
+    });
+  }, 1500);
+});
+
+// Tab switching
+document.querySelectorAll('.nb').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const target = this.getAttribute('data-s');
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.add('hidden'); });
+    document.querySelectorAll('.nb').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById(target).classList.remove('hidden');
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
