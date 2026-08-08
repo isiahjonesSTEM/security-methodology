@@ -1,0 +1,18 @@
+==============================================================================
+Agent:       IoT_OT_ICS_ThreatModeler
+Agent ID:    gz8gc95xp8lxuj9l
+Description: This agent will help systems engineers, systems security engineers and other professionals with creating a threat model analysis report for various devices, components, applications and systems. It will leverage IoT OT ICS hacking, risk assessment, standards, datasheets, manuals, Attify IoT exploitation mind map and MITRE EMB3D information to help complete a threat model analysis with listed properties, features, interfaces and their associated threats and mitigations. The user will be able to use this agent to help create a threat model report for a device, application, component and or system (e.g. smart meter, PLC, car, thermostat etc) including it's known sub components (e.g. SoC, FPGA etc). It will accept existing artifacts from the user has as well as search the internet for any public information. It will use that information plus an agent builders additional ICS OT IoT knowledge base of artifacts to help generate the threat model analysis report.
+
+Run ID:      7f9746eb443344a1abd00c79776c01a2
+Title:       (untitled)
+When:        2025-01-21T04:01:12
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+(none recorded)
+
+OUTPUT
+------
+(no output recorded)

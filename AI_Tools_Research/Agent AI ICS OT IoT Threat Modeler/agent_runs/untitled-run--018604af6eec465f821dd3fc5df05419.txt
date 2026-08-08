@@ -1,0 +1,18 @@
+==============================================================================
+Agent:       Job Application Assistant AI
+Agent ID:    ud8p6yj5bk5hl42u
+Description: An AI-powered agent that generates a personalized cover letter and email for job applications. By analyzing the user's resume and the job description, the agent crafts tailored content to help users effectively apply for their desired positions.
+
+Run ID:      018604af6eec465f821dd3fc5df05419
+Title:       (untitled)
+When:        2025-02-28T04:21:11
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+(none recorded)
+
+OUTPUT
+------
+(no output recorded)

@@ -1,0 +1,50 @@
+==============================================================================
+Agent:       IoT_OT_ICS_ThreatModeler
+Agent ID:    gz8gc95xp8lxuj9l
+Description: This agent will help systems engineers, systems security engineers and other professionals with creating a threat model analysis report for various devices, components, applications and systems. It will leverage IoT OT ICS hacking, risk assessment, standards, datasheets, manuals, Attify IoT exploitation mind map and MITRE EMB3D information to help complete a threat model analysis with listed properties, features, interfaces and their associated threats and mitigations. The user will be able to use this agent to help create a threat model report for a device, application, component and or system (e.g. smart meter, PLC, car, thermostat etc) including it's known sub components (e.g. SoC, FPGA etc). It will accept existing artifacts from the user has as well as search the internet for any public information. It will use that information plus an agent builders additional ICS OT IoT knowledge base of artifacts to help generate the threat model analysis report.
+
+Run ID:      c6e35c521bd244a0aa2f381b5dc1a13d
+Title:       (untitled)
+When:        2025-01-28T22:27:29
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+user_input_target_component: Siemens S7 1500 PLC
+user_input_existing_artifacts:
+    [
+      {
+        "file_name": "s7-1500-manual-en.pdf",
+        "file_size": 5698490,
+        "file_type": "application/pdf",
+        "id": 7782,
+        "knowledgebase": "",
+        "label": "s7-1500-manual-en.pdf",
+        "last_modified": "Tue, 28 Jan 2025 22:53:55 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/7Ers42D1Q4279vblcMOS",
+        "s3_url": "https://cdn.filestackcontent.com/7Ers42D1Q4279vblcMOS",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/QnX8VTDFQASj00Da7ZsO_s7-1500-manual-en.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/heqqxnkm_s7-1500-manual-en.txt",
+        "value": "https://cdn.filestackcontent.com/7Ers42D1Q4279vblcMOS"
+      },
+      {
+        "file_name": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "file_size": 346367,
+        "file_type": "application/pdf",
+        "id": 7783,
+        "knowledgebase": "",
+        "label": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "last_modified": "Tue, 28 Jan 2025 22:53:55 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/EpLGq1yLSzqA1W80eTUa",
+        "s3_url": "https://cdn.filestackcontent.com/EpLGq1yLSzqA1W80eTUa",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/OqphAJjDS4e64EfXEN6Y_01-SIEMENS-S7-1500-Datasheet.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/cgxgqom6_01-SIEMENS-S7-1500-Datasheet.txt",
+        "value": "https://cdn.filestackcontent.com/EpLGq1yLSzqA1W80eTUa"
+      }
+    ]
+
+
+OUTPUT
+------
+Now lets try to convert the AI model output into a PDF file. 

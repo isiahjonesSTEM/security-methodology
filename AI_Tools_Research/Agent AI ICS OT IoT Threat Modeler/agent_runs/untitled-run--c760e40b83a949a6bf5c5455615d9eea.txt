@@ -1,0 +1,18 @@
+==============================================================================
+Agent:       Fit to purpose image generator
+Agent ID:    0frbzoamzb733wh2
+Description: This specialized Image Generation agent guides users through a series of targeted prompts to capture all essential image parameters: theme, text content, featured objects, color palette, and visual style. By methodically gathering these creative specifications through an intuitive interface, the agent eliminates the complexity typically associated with image creation. Once all parameters are collected, the agent seamlessly processes these inputs through advanced generative AI models to produce images that precisely match user intent.
+
+Run ID:      c760e40b83a949a6bf5c5455615d9eea
+Title:       (untitled)
+When:        2025-01-21T21:18:52
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+(none recorded)
+
+OUTPUT
+------
+(no output recorded)

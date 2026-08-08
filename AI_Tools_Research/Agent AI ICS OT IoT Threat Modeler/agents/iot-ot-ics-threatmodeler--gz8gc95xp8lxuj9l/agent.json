@@ -1,0 +1,1429 @@
+{
+  "agent_id": "gz8gc95xp8lxuj9l",
+  "agent_id_human": "IoT_OT_ICS_ThreatModeler",
+  "type": "studio",
+  "version": 188,
+  "name": "IoT_OT_ICS_ThreatModeler",
+  "description": " This agent will help systems engineers, systems security engineers and other professionals with creating a threat model analysis report for various devices, components, applications and systems. It will leverage IoT OT ICS hacking, risk assessment, standards, datasheets, manuals, Attify IoT exploitation mind map and MITRE EMB3D information to help complete a threat model analysis with listed properties, features, interfaces and their associated threats and mitigations. The user will be able to use this agent to help create a threat model report for a device, application, component and or system (e.g. smart meter, PLC, car, thermostat etc) including it's known sub components (e.g. SoC, FPGA etc). It will accept existing artifacts from the user has as well as search the internet for any public information. It will use that information plus an agent builders additional ICS OT IoT knowledge base of artifacts to help generate the threat model analysis report. ",
+  "demo_video_url": null,
+  "instructions": null,
+  "actions": [
+    {
+      "label": "Get User Input",
+      "type": "get_user_input",
+      "icon": "\ud83e\uddd1\u200d\ud83d\udcbb",
+      "category": "Inputs & Data Retrieval",
+      "tooltip": "Capture user input with options like text, numbers, URLs, and dropdowns, to collect dynamic responses.",
+      "inputs": [
+        {
+          "type": "dropdown",
+          "value": "text",
+          "name": "input_type",
+          "label": "Input Type",
+          "required": true,
+          "hint": "Choose the type of input you want to capture from the user, such as text, number, or dropdown selection. For example, select 'Text' for open-ended input, 'URL' for web links, or 'Yes/No' for binary responses.",
+          "options": [
+            {
+              "label": "Text",
+              "value": "text"
+            },
+            {
+              "label": "Number",
+              "value": "number"
+            },
+            {
+              "label": "Yes/No",
+              "value": "boolean"
+            },
+            {
+              "label": "Textarea",
+              "value": "textarea"
+            },
+            {
+              "label": "URL",
+              "value": "URL"
+            },
+            {
+              "label": "Website Domain",
+              "value": "website_domain"
+            },
+            {
+              "label": "Dropdown (single)",
+              "value": "dropdown (single)"
+            },
+            {
+              "label": "Dropdown (multiple)",
+              "value": "dropdown (multiple)"
+            },
+            {
+              "label": "Multi-Item Selector",
+              "value": "multi_item_selector"
+            },
+            {
+              "label": "Multi-Item Selector (Table View)",
+              "value": "multi_item_selector_table"
+            },
+            {
+              "label": "Radio Select (single)",
+              "value": "radio"
+            },
+            {
+              "label": "HubSpot Portal",
+              "value": "HubSpot Portal"
+            },
+            {
+              "label": "HubSpot Company",
+              "value": "HubSpot Company"
+            },
+            {
+              "label": "Knowledge Base",
+              "value": "Knowledge Base"
+            }
+          ],
+          "dropdownOptions": [],
+          "examples": [
+            "Programmable Logic Controller (PLC), Smart Meter, thermostat, system on chip (SoC), FPGA, Car, robot, application, system, sensors, smart pumps etc. You can use this agent to model various ICS, OT and IoT components, devices, systems and their sub parts. "
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Hi, I'm here to help you Threat Model Components. What Components or System do you wish to Threat Model today?",
+          "name": "input_description",
+          "label": "User Prompt",
+          "required": true,
+          "hint": "Write a clear prompt to guide users on what information is required. For example, 'Please enter your email address' or 'Select your preferred contact method.'"
+        },
+        {
+          "type": "text",
+          "value": "",
+          "name": "default_value",
+          "label": "Default Value",
+          "required": false,
+          "hint": "Provide a default response that appears automatically, guiding users or simplifying input. For example, 'example@domain.com' for an email field."
+        },
+        {
+          "type": "checkbox",
+          "value": true,
+          "name": "required",
+          "label": "Required?",
+          "required": false,
+          "hint": "Mark this checkbox if this input is mandatory. For example, enable it if a response is essential to proceed in the workflow."
+        },
+        {
+          "type": "text",
+          "value": "user_input_target_component",
+          "name": "input_name",
+          "label": "Output Variable Name",
+          "required": true,
+          "hint": "Assign a unique variable name for the input value, such as 'user_email' or 'preferred_contact', which you can reference later in the workflow.",
+          "validation": {
+            "regex": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "message": "Variable names must start with a letter and can only contain letters, numbers, and underscores (_)."
+          }
+        },
+        {
+          "type": "checkbox",
+          "value": true,
+          "name": "show_in_agent_settings",
+          "label": "Persist Variable in Agent Settings",
+          "required": false,
+          "hint": "When enabled, this input will appear as a configurable preference in the Agent Settings > Preferences tab, allowing users to set a default value that persists across agent runs. Accessible via {{ agent.preferences.user_input}} for reuse."
+        },
+        {
+          "type": "checkbox",
+          "value": false,
+          "name": "settings_only",
+          "label": "Only show in Agent Settings (skip during agent run)",
+          "required": false,
+          "hint": "When enabled, this input will NOT be shown to users during agent runs. The value will only come from Agent Settings > Preferences."
+        }
+      ],
+      "group": "agentai_actions",
+      "logo": null,
+      "order": 0,
+      "id": "c228ae58-1428-4c79-bfdb-c45dc3d99d53"
+    },
+    {
+      "category": "User Input",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Provide clear instructions for users to upload files, such as 'Upload your resume as a PDF.'",
+          "label": "User Prompt",
+          "name": "input_description",
+          "required": true,
+          "type": "text",
+          "value": "Please upload any existing artifacts you have. "
+        },
+        {
+          "hint": "Mark as required if file upload is necessary for the workflow to proceed.",
+          "label": "Required?",
+          "name": "required",
+          "required": false,
+          "type": "checkbox",
+          "value": false
+        },
+        {
+          "hint": "Assign a variable name for the uploaded files, such as 'user_documents' or 'uploaded_images'. This will be used to reference the files in subsequent steps.",
+          "label": "Output Variable Name",
+          "name": "input_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "user_input_existing_artifacts"
+        },
+        {
+          "hint": "Enable this option to restrict access to files uploaded only during the current session.",
+          "label": "Show only files uploaded in the current session",
+          "name": "in_session_files_only",
+          "required": false,
+          "type": "checkbox",
+          "value": true
+        }
+      ],
+      "label": "Get User File",
+      "order": 1,
+      "tooltip": "Allow users to upload files for processing, storage, or review within the workflow.",
+      "type": "get_user_files",
+      "id": "a105a011-246f-4117-8a87-7780b71aeba2"
+    },
+    {
+      "category": "User Input",
+      "inputs": [
+        {
+          "hint": "Set the display text for the button, such as 'Proceed to Next Step' or 'Continue'.",
+          "label": "Variable Value",
+          "name": "variable_value",
+          "required": true,
+          "type": "text",
+          "value": "Thank you for uploading your existing artifacts. Now let me search online for any additional information."
+        }
+      ],
+      "label": "Click Go to Continue",
+      "order": 2,
+      "tooltip": "Prompt users to click 'Go' to proceed with the next step in the workflow.",
+      "type": "click_go_to_continue",
+      "id": "294cd339-8b78-46eb-964f-5022a9404065"
+    },
+    {
+      "category": "Get Data",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Select the search engine to use, such as 'Google' for web searches or 'YouTube' for video content.",
+          "label": "Search Engine",
+          "name": "search_engine",
+          "options": [
+            {
+              "label": "Google",
+              "value": "google"
+            },
+            {
+              "label": "YouTube",
+              "value": "youtube"
+            },
+            {
+              "label": "YouTube Channel",
+              "value": "youtube_channel"
+            }
+          ],
+          "required": true,
+          "type": "dropdown",
+          "value": "google"
+        },
+        {
+          "hint": "Provide search terms to find specific results, such as 'best AI tools' or 'latest tech trends'.",
+          "label": "Query",
+          "name": "query",
+          "required": true,
+          "type": "text",
+          "value": "{{user_input_target_component}}{{user_input_existing_artifacts}}"
+        },
+        {
+          "hint": "Specify how many results to return, with options ranging from 1 to 100. For example, select '10' for top 10 results.",
+          "label": "Number of Posts to Retrieve",
+          "name": "num_posts",
+          "options": [
+            {
+              "label": "1",
+              "value": 1
+            },
+            {
+              "label": "5",
+              "value": 5
+            },
+            {
+              "label": "10",
+              "value": 10
+            },
+            {
+              "label": "25",
+              "value": 25
+            },
+            {
+              "label": "50",
+              "value": 50
+            },
+            {
+              "label": "100",
+              "value": 100
+            }
+          ],
+          "required": true,
+          "type": "dropdown",
+          "value": 25
+        },
+        {
+          "hint": "Assign a variable name to store the search results, like 'google_results' or 'search_output'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "iot_ot_ics_component_search_results"
+        }
+      ],
+      "label": "Search Results",
+      "order": 3,
+      "tooltip": "Fetch search results from Google, YouTube, or YouTube channels for specified queries.",
+      "type": "get_search_results",
+      "id": "86c43808-2142-40c1-9631-6f18dac219fc"
+    },
+    {
+      "category": "User Input",
+      "inputs": [
+        {
+          "hint": "Set the display text for the button, such as 'Proceed to Next Step' or 'Continue'.",
+          "label": "Variable Value",
+          "name": "variable_value",
+          "required": true,
+          "type": "text",
+          "value": "Now lets check MITRE EMB3D, Attify IoT Mindmap and other references online. "
+        }
+      ],
+      "label": "Click Go to Continue",
+      "order": 4,
+      "tooltip": "Prompt users to click 'Go' to proceed with the next step in the workflow.",
+      "type": "click_go_to_continue",
+      "id": "3521cac5-4797-412b-976a-02a44460e9cb"
+    },
+    {
+      "category": "Get Data",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Enter the web page URL from which text should be extracted, such as 'https://agent.ai'.",
+          "label": "URL",
+          "name": "url",
+          "required": true,
+          "type": "text",
+          "value": "https://emb3d.mitre.org/properties-list/"
+        },
+        {
+          "dropdownOptions": [],
+          "hint": "Choose between scraping a single page or crawling multiple pages for broader data extraction. Select 'Scrape' for one page or 'Crawl' to cover up to 100 pages.",
+          "label": "Crawler Mode",
+          "name": "mode",
+          "options": [
+            {
+              "label": "Scrape (1 page) (Default)",
+              "value": "scrape"
+            },
+            {
+              "label": "Crawl (up to 100 pages)",
+              "value": "crawl"
+            }
+          ],
+          "required": false,
+          "type": "dropdown",
+          "value": "crawl"
+        },
+        {
+          "hint": "Provide a variable name to store extracted text, such as 'page_content' or 'web_data'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "mitre_emb3d_property_list"
+        }
+      ],
+      "label": "Web Page Content",
+      "order": 5,
+      "tooltip": "Extract text from a specified web page or crawl multiple pages for comprehensive data gathering.",
+      "type": "grab_web_text",
+      "id": "a4408cd3-49d3-4e67-b584-73fd1783a79d"
+    },
+    {
+      "category": "Get Data",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Enter the web page URL from which text should be extracted, such as 'https://agent.ai'.",
+          "label": "URL",
+          "name": "url",
+          "required": true,
+          "type": "text",
+          "value": "https://emb3d.mitre.org/threats/"
+        },
+        {
+          "dropdownOptions": [],
+          "hint": "Choose between scraping a single page or crawling multiple pages for broader data extraction. Select 'Scrape' for one page or 'Crawl' to cover up to 100 pages.",
+          "label": "Crawler Mode",
+          "name": "mode",
+          "options": [
+            {
+              "label": "Scrape (1 page) (Default)",
+              "value": "scrape"
+            },
+            {
+              "label": "Crawl (up to 100 pages)",
+              "value": "crawl"
+            }
+          ],
+          "required": false,
+          "type": "dropdown",
+          "value": "crawl"
+        },
+        {
+          "hint": "Provide a variable name to store extracted text, such as 'page_content' or 'web_data'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "mitre_emb3d_threats_list"
+        }
+      ],
+      "label": "Web Page Content",
+      "order": 6,
+      "tooltip": "Extract text from a specified web page or crawl multiple pages for comprehensive data gathering.",
+      "type": "grab_web_text",
+      "id": "d0be8bf3-9ef6-40b1-adaa-f4fc04b69c67"
+    },
+    {
+      "category": "Get Data",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Enter the web page URL from which text should be extracted, such as 'https://agent.ai'.",
+          "label": "URL",
+          "name": "url",
+          "required": true,
+          "type": "text",
+          "value": "https://emb3d.mitre.org/mitigations/"
+        },
+        {
+          "dropdownOptions": [],
+          "hint": "Choose between scraping a single page or crawling multiple pages for broader data extraction. Select 'Scrape' for one page or 'Crawl' to cover up to 100 pages.",
+          "label": "Crawler Mode",
+          "name": "mode",
+          "options": [
+            {
+              "label": "Scrape (1 page) (Default)",
+              "value": "scrape"
+            },
+            {
+              "label": "Crawl (up to 100 pages)",
+              "value": "crawl"
+            }
+          ],
+          "required": false,
+          "type": "dropdown",
+          "value": "crawl"
+        },
+        {
+          "hint": "Provide a variable name to store extracted text, such as 'page_content' or 'web_data'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "mitre_emb3d_mitigations_list"
+        }
+      ],
+      "label": "Web Page Content",
+      "order": 7,
+      "tooltip": "Extract text from a specified web page or crawl multiple pages for comprehensive data gathering.",
+      "type": "grab_web_text",
+      "id": "fc8d9698-c4fc-4498-9c22-8129061e98a5"
+    },
+    {
+      "category": "Get Data",
+      "inputs": [
+        {
+          "hint": "Enter the web page URL from which text should be extracted, such as 'https://agent.ai'.",
+          "label": "URL",
+          "name": "url",
+          "required": true,
+          "type": "text",
+          "value": "https://xmind.app/m/UZ2e/"
+        },
+        {
+          "dropdownOptions": [],
+          "hint": "Choose between scraping a single page or crawling multiple pages for broader data extraction. Select 'Scrape' for one page or 'Crawl' to cover up to 100 pages.",
+          "label": "Crawler Mode",
+          "name": "mode",
+          "options": [
+            {
+              "label": "Scrape (1 page) (Default)",
+              "value": "scrape"
+            },
+            {
+              "label": "Crawl (up to 100 pages)",
+              "value": "crawl"
+            }
+          ],
+          "required": false,
+          "type": "dropdown",
+          "value": "crawl"
+        },
+        {
+          "hint": "Provide a variable name to store extracted text, such as 'page_content' or 'web_data'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "attify_iot_mindmap"
+        }
+      ],
+      "label": "Web Page Content",
+      "order": 8,
+      "tooltip": "Extract text from a specified web page or crawl multiple pages for comprehensive data gathering.",
+      "type": "grab_web_text",
+      "id": "85bdc7f7-c64a-45d2-b937-d9837b590bc3"
+    },
+    {
+      "category": "User Input",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Set the display text for the button, such as 'Proceed to Next Step' or 'Continue'.",
+          "label": "Variable Value",
+          "name": "variable_value",
+          "required": true,
+          "type": "text",
+          "value": "Let's also add in the Agent's ICS OT IoT knowledge base artifacts for additional insights."
+        }
+      ],
+      "label": "Click Go to Continue",
+      "order": 9,
+      "tooltip": "Prompt users to click 'Go' to proceed with the next step in the workflow.",
+      "type": "click_go_to_continue",
+      "id": "dedbec87-b53f-4770-bd25-982215712c5c"
+    },
+    {
+      "category": "Get Data",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Enter the search query to retrieve relevant knowledge base entries, such as 'best sales strategies'.",
+          "label": "Query",
+          "name": "query",
+          "required": true,
+          "type": "text",
+          "value": "{{threat model}}"
+        },
+        {
+          "hint": "Select which knowledge base to use for the search. For example, choose 'Product Docs' or 'Marketing Tips'.",
+          "label": "Builder knowledge base to use",
+          "name": "builder_knowledge_bases_list",
+          "options": [],
+          "required": true,
+          "type": "dropdown",
+          "value": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "hint": "Specify the maximum number of document chunks to return, such as '5' or '10'.",
+          "label": "Max number of document chunks to retrieve",
+          "name": "max_documents_count",
+          "required": true,
+          "type": "text",
+          "value": "25"
+        },
+        {
+          "hint": "Set the score threshold for search relevance, such as '0.2' for broader results or '0.7' for more precise matches.",
+          "label": "Qualitative vactor score cutoff for semantic search cosine similarity",
+          "name": "score_cutoff",
+          "required": true,
+          "type": "text",
+          "value": "0.4"
+        },
+        {
+          "hint": "Assign a variable name to store the knowledge base results, like 'kb_results' or 'search_output'.",
+          "label": "Output Variable Name",
+          "name": "output_variable_name",
+          "required": true,
+          "type": "text",
+          "validation": {
+            "message": "Only letters, numbers and underscores (_) are allowed in variable names.",
+            "regex": "^[a-zA-Z0-9_]+$"
+          },
+          "value": "iot_ot_ics_agent_knowledge_base_results"
+        }
+      ],
+      "label": "Get Data from Builder's Knowledge Base",
+      "order": 10,
+      "tooltip": "Fetch semantic search results from the builder's knowledge base for data analysis. This would allow your AI actions to leverage relevant structured data from the knowledge base based on filtering criteria.",
+      "type": "get_data_from_builder_knowledge_base",
+      "id": "74269663-cd5a-46d1-a9ed-7a3cd9958187"
+    },
+    {
+      "category": "User Input",
+      "disabled": false,
+      "inputs": [
+        {
+          "hint": "Set the display text for the button, such as 'Proceed to Next Step' or 'Continue'.",
+          "label": "Variable Value",
+          "name": "variable_value",
+          "required": true,
+          "type": "text",
+          "value": "Now lets pass all information to our selected AI model to assist us with our threat model analysis."
+        }
+      ],
+      "label": "Click Go to Continue",
+      "order": 11,
+      "tooltip": "Prompt users to click 'Go' to proceed with the next step in the workflow.",
+      "type": "click_go_to_continue",
+      "id": "a1e09d21-ec57-4a42-8e27-9ab680f48184"
+    },
+    {
+      "label": "Generate Content",
+      "type": "invoke_llm",
+      "icon": "\ud83e\udd16",
+      "category": "AI & Content Generation",
+      "tooltip": "Invoke a language model (LLM) to generate text based on input instructions.",
+      "inputs": [
+        {
+          "type": "dropdown",
+          "value": "auto",
+          "name": "llm_engine",
+          "label": "LLM Engine",
+          "required": true,
+          "hint": "Choose the language model to use, such as 'GPT-4o' for detailed responses or 'Claude Opus' for creative writing.",
+          "options": [
+            {
+              "label": "Auto Optimized (Automatically selects the best model for your task)",
+              "value": "auto",
+              "showAttachments": true,
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-5.2 (Smart model for coding, reasoning, and agentic tasks across domains)",
+              "value": "gpt-5.2",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-5.2 Pro (Smartest model for coding, reasoning, and agentic tasks across domains, but takes longer to generate responses)",
+              "value": "gpt-5.2-pro",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-5 (Great model for coding, reasoning, and agentic tasks across domains)",
+              "value": "gpt-5",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-5 mini (a faster, more cost-efficient version of GPT-5, great for well-defined tasks and precise prompts)",
+              "value": "gpt-5-mini",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-5-nano (our fastest, cheapest version of GPT-5, great for summarization and classification tasks)",
+              "value": "gpt-5-nano",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-4.1 (Smart model for complex tasks, also supports images and text inputs)",
+              "value": "gpt-4.1",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-4o (High-performance model for complex reasoning and tasks)",
+              "value": "gpt4o",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-4o-Mini (Efficient model for general-purpose tasks with faster responses)",
+              "value": "gpt-4o-mini",
+              "showAttachments": true,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o3 (The best thinking model suitable for deep reasoning tasks)",
+              "value": "o3",
+              "showAttachments": false,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o3 Mini (Thinking model suitable for fast and advanced tasks)",
+              "value": "o3-mini",
+              "showAttachments": false,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o3 Pro (Most advanced thinking model suitable for advanced tasks)",
+              "value": "o3-pro",
+              "showAttachments": false,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o4 Mini (Thinking model suitable for fast and advanced tasks)",
+              "value": "o4-mini",
+              "showAttachments": false,
+              "category": "OpenAI",
+              "structuredOutputs": true
+            },
+            {
+              "label": "Claude Haiku 4.5 (Anthropic's fastest, capable and intelligent model)",
+              "value": "claude-haiku-4-5",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "structuredOutputs": true,
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Claude Sonnet 4.6 (Anthropic's most capable and intelligent model yet)",
+              "value": "claude-sonnet-4-6",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "structuredOutputs": true,
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Claude Opus 4.6 (Anthropic's most capable and intelligent model yet)",
+              "value": "claude-opus-4-6",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "structuredOutputs": true,
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Claude Opus 4.1 (Anthropic's most powerful high-performance model with exceptional reasoning and efficiency)",
+              "value": "claude-opus-4-1-20250805",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Claude Sonnet 4 (Anthropic's capable and intelligent model)",
+              "value": "claude-sonnet-4-20250514",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Claude Opus 4 (Anthropic's high-performance model with exceptional reasoning and efficiency)",
+              "value": "claude-opus-4-20250514",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "availableSkills": [
+                {
+                  "label": "PowerPoint (pptx)",
+                  "value": "pptx"
+                },
+                {
+                  "label": "Excel (xlsx)",
+                  "value": "xlsx"
+                },
+                {
+                  "label": "Word (docx)",
+                  "value": "docx"
+                },
+                {
+                  "label": "PDF (pdf)",
+                  "value": "pdf"
+                }
+              ]
+            },
+            {
+              "label": "Gemini 3  (Best Google model for world knowledge, code, and long text)",
+              "value": "gemini-3-pro-preview",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 3.1 Flash Image Preview  (Best image generation model)",
+              "value": "gemini-3.1-flash-image-preview",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 2.5 Pro (Great Google model for world knowledge, code, and long text)",
+              "value": "gemini-2.5-pro-preview-05-06",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 2.5 Flash (Great Google model cost effective adaptive thinking)",
+              "value": "gemini-2.5-flash-preview-04-17",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 2.0 Pro  (Second best Google model for world knowledge, code, and long text)",
+              "value": "gemini-2.0-pro-exp-02-05",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 2.0 Flash (Fast and efficient model for real-time applications)",
+              "value": "gemini-2.0-flash-exp",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 2.0 Flash Thinking Mode (Enhanced reasoning capabilities for complex problem-solving)",
+              "value": "gemini-2.0-flash-thinking-exp-1219",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 1.5 Pro (Professional-grade model for detailed and accurate outputs)",
+              "value": "gemini_15_pro",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Gemini 1.5 Flash (Optimized for speed, suitable for quick information retrieval)",
+              "value": "gemini_15_flash",
+              "showAttachments": false,
+              "category": "Google"
+            },
+            {
+              "label": "Perplexity (Ideal for tasks requiring high creativity and diverse outputs while using live Internet Search)",
+              "value": "perplexity",
+              "category": "Perplexity (with search access)",
+              "showAttachments": false
+            },
+            {
+              "label": "Perplexity Deep Research (Deep research model that analyzes hundreds of sources, delivering expert-level insights in minutes)",
+              "value": "perplexity-deep-research",
+              "category": "Perplexity (with search access)",
+              "showAttachments": false
+            },
+            {
+              "label": "Gemma2 9B It (Enhanced version for more complex Italian language applications)",
+              "value": "gemma2-9b-it",
+              "showAttachments": false,
+              "category": "Google (Open Source)"
+            },
+            {
+              "label": "DeepSeek R1 (Optimized for tasks requiring high accuracy and detail)",
+              "value": "deepseek-r1-distill-llama-70b",
+              "showAttachments": false,
+              "category": "DeepSeek"
+            },
+            {
+              "label": "Llama 4 Scout 17B (latest) (Versatile model excelling in both language and mathematical tasks)",
+              "value": "meta-llama/llama-4-scout-17b-16e-instruct",
+              "showAttachments": false,
+              "category": "Meta"
+            },
+            {
+              "label": "GPT-4.5 (Deprecating soon - Switch to GPT-4.1)",
+              "value": "gpt45",
+              "showAttachments": true,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "structuredOutputs": true
+            },
+            {
+              "label": "GPT-4 Vision (Deprecated - switch to GPT-4.1 for vision tasks)",
+              "value": "gpt_4v",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "disabled": true
+            },
+            {
+              "label": "Claude 3.7 Sonnet (Deprecated - switch to Claude Sonnet 4)",
+              "value": "claude_sonnet_37",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "disabled": true
+            },
+            {
+              "label": "Claude 3.5 Sonnet (Deprecated - switch to Claude Sonnet 4)",
+              "value": "claude_sonnet_35",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "disabled": true
+            },
+            {
+              "label": "Claude 3.5 Sonnet Multi-Modal (Deprecated - switch to Claude Sonnet 4)",
+              "value": "claude_sonnet_35_vision",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "disabled": true
+            },
+            {
+              "label": "Claude Opus 3 (Deprecated - switch to Claude Sonnet 4)",
+              "value": "claude_opus",
+              "showAttachments": false,
+              "category": "Anthropic",
+              "disabled": true
+            },
+            {
+              "label": "OpenAI o1 (Deprecating soon - switch to Open AI o3)",
+              "value": "o1",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o1 Mini (Deprecating soon - switch to Open AI o3)",
+              "value": "o1-mini",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "structuredOutputs": true
+            },
+            {
+              "label": "OpenAI o1-pro (Deprecating soon, switch to Open AI o3)",
+              "value": "o1-pro",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "structuredOutputs": true
+            },
+            {
+              "label": "Llama 3.3 70B (Deprecating soon, switch to LLama 4 Scout)",
+              "value": "llama-3.3-70b-versatile",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated"
+            },
+            {
+              "label": "Gemma 7B It (Deprecated - switch to Gemma2 9B It)",
+              "value": "gemma-7b-it",
+              "showAttachments": false,
+              "category": "Legacy Models Soon To Be Deprecated",
+              "disabled": true
+            }
+          ]
+        },
+        {
+          "type": "multi-select",
+          "value": [],
+          "name": "anthropic_skills",
+          "label": "Anthropic Skills",
+          "required": false,
+          "hint": "Select document generation skills to enable (PowerPoint, Excel, Word, PDF). Generated files will be available in response_files.",
+          "options": []
+        },
+        {
+          "type": "textarea",
+          "value": "You are a 20 year experienced Systems Security Engineer responsible for creating technical security threat models of requested devices, components, applications and systems. You will leverage the user and agent provided inputs, artifacts, online searches and knowledge base references to analyze the provided in scope component {{user_input_target_component}} {{user_input_existing_artifacts}} {{iot_ot_ics_component_search_results}} {{mitre_emb3d_property_list}} {{mitre_emb3d_threats_list}} {{mitre_emb3d_mitigations_list}} {{attify_iot_mindmap}} {{iot_ot_ics_agent_knowledge_base_results}}. \n\nYou will first use this information to conduct analysis. You will secondly use that analysis to generate a threat report containing the following in order:\n\n1) A mitre emb3d threat model technical analysis for the in scope component, device, application or system.  The threat model analysis will include the associated component mitre emb3d property names, features and interfaces. You will use the mitre emb3d properties, features and interface naming conventions. You will use the device properties list naming convention, threats and mitigations from here https://emb3d.mitre.org/properties-list/\n\n2) A table formatted reference list of the associated properties, features and interfaces mapped to the applicable mitre emb3d threats and corresponding mitigations. Use the threats and mitigations list from here https://emb3d.mitre.org\n\n3) A table referencing applicable MITRE ATT&CK for ICS tactics and techniques. \n\n4) A table referencing the ISA IEC 62443-4-2 component security requirements that can be used as device design mitigations. \n\n\n\n\n\n",
+          "name": "instructions",
+          "label": "Instructions",
+          "required": true,
+          "hint": "Enter detailed instructions for the language model, such as 'Write a summary of the document' or 'Create an engaging email subject line.'"
+        },
+        {
+          "type": "multi-select-checkbox",
+          "value": [
+            "https://cdn.filestackcontent.com/0WO0hIgdSLKfTsBYgx85",
+            "https://cdn.filestackcontent.com/BBtQdmFVSbO7buSuuclS",
+            "https://cdn.filestackcontent.com/N7dykQIdSH6kxb4ZYELi",
+            "https://cdn.filestackcontent.com/GSEBu3l4S9GtTdDKYFko",
+            "https://cdn.filestackcontent.com/G7ue1WHwRyG83qDZyGGw",
+            "https://cdn.filestackcontent.com/p2CSVq2eTZy8rJ2gJTEx",
+            "https://cdn.filestackcontent.com/tGuPxy76RyeNWIqtfEGu",
+            "https://cdn.filestackcontent.com/Su6FvcuiRRFKNrqvooSc",
+            "https://cdn.filestackcontent.com/SrpJRu2cRIWRMYEtYgGm",
+            "https://cdn.filestackcontent.com/RJqZd0pSTqeFv6G0lSLO",
+            "https://cdn.filestackcontent.com/PQAUMl1T9iawENJuC0Fh",
+            "https://cdn.filestackcontent.com/DIxDUGP7TticVhrIquEU",
+            "https://cdn.filestackcontent.com/HD4yieNMR5SfG3AIQEzD"
+          ],
+          "name": "knowledge_bases",
+          "label": "Select Attachment(s) for LLM Assistant (uploaded to Knowledge Base)",
+          "required": false,
+          "hint": "",
+          "options": []
+        },
+        {
+          "type": "json-schema",
+          "value": "",
+          "name": "output_json_schema",
+          "label": "JSON Schema (Structured Output)",
+          "required": false,
+          "hint": "Optional. Provide a JSON schema to constrain the LLM response to a specific structure. The response will be valid JSON matching this schema."
+        },
+        {
+          "type": "text",
+          "value": "LLM_threatModel_output",
+          "name": "output_variable_name",
+          "label": "Output Variable Name",
+          "required": false,
+          "hint": "Assign a variable name to store the generated text, like 'llm_output' or 'ai_generated_text'.",
+          "validation": {
+            "regex": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "message": "Variable names must start with a letter and can only contain letters, numbers, and underscores (_)."
+          }
+        }
+      ],
+      "group": "agentai_actions",
+      "logo": null,
+      "id": "6e68a5fb-63d7-4038-a706-9182beb51e59",
+      "order": 12,
+      "disabled": false,
+      "files": [
+        {
+          "file_name": "ICS+OSINT.xlsx",
+          "file_size": 52938,
+          "file_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "s3_url": "https://cdn.filestackcontent.com/0WO0hIgdSLKfTsBYgx85",
+          "label": "ICS+OSINT.xlsx",
+          "value": "https://cdn.filestackcontent.com/0WO0hIgdSLKfTsBYgx85",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5762,
+          "last_modified": "2025-01-20T23:02:00",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "OffensiveReverseEngineerGPT.txt",
+          "file_size": 3006,
+          "file_type": "text/plain",
+          "s3_url": "https://cdn.filestackcontent.com/BBtQdmFVSbO7buSuuclS",
+          "label": "OffensiveReverseEngineerGPT.txt",
+          "value": "https://cdn.filestackcontent.com/BBtQdmFVSbO7buSuuclS",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5792,
+          "last_modified": "2025-01-21T01:20:44",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "properties_list.xlsx",
+          "file_size": 13739,
+          "file_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "s3_url": "https://cdn.filestackcontent.com/DIxDUGP7TticVhrIquEU",
+          "label": "properties_list.xlsx",
+          "value": "https://cdn.filestackcontent.com/DIxDUGP7TticVhrIquEU",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5819,
+          "last_modified": "2025-01-21T05:56:21",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "FRCS PENTEST CHECKLIST 12-07-2016 copy.xlsx",
+          "file_size": 204188,
+          "file_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "s3_url": "https://cdn.filestackcontent.com/G7ue1WHwRyG83qDZyGGw",
+          "label": "FRCS PENTEST CHECKLIST 12-07-2016 copy.xlsx",
+          "value": "https://cdn.filestackcontent.com/G7ue1WHwRyG83qDZyGGw",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5764,
+          "last_modified": "2025-01-20T23:05:16",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "FRCS FAT SAT CHECKLIST 12-07-2016 copy.xlsx",
+          "file_size": 37033,
+          "file_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "s3_url": "https://cdn.filestackcontent.com/GSEBu3l4S9GtTdDKYFko",
+          "label": "FRCS FAT SAT CHECKLIST 12-07-2016 copy.xlsx",
+          "value": "https://cdn.filestackcontent.com/GSEBu3l4S9GtTdDKYFko",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5765,
+          "last_modified": "2025-01-20T23:05:16",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "heat_map.xlsx",
+          "file_size": 16731,
+          "file_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "s3_url": "https://cdn.filestackcontent.com/HD4yieNMR5SfG3AIQEzD",
+          "label": "heat_map.xlsx",
+          "value": "https://cdn.filestackcontent.com/HD4yieNMR5SfG3AIQEzD",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5818,
+          "last_modified": "2025-01-21T05:56:21",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "PentesterGPT.txt",
+          "file_size": 2007,
+          "file_type": "text/plain",
+          "s3_url": "https://cdn.filestackcontent.com/N7dykQIdSH6kxb4ZYELi",
+          "label": "PentesterGPT.txt",
+          "value": "https://cdn.filestackcontent.com/N7dykQIdSH6kxb4ZYELi",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5793,
+          "last_modified": "2025-01-21T01:20:44",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "ISA84 WG9 3rd ed Master Review copy R9.1.docx",
+          "file_size": 8352670,
+          "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "s3_url": "https://cdn.filestackcontent.com/p2CSVq2eTZy8rJ2gJTEx",
+          "label": "ISA84 WG9 3rd ed Master Review copy R9.1.docx",
+          "value": "https://cdn.filestackcontent.com/p2CSVq2eTZy8rJ2gJTEx",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5744,
+          "last_modified": "2025-01-20T22:43:13",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "SecureSystemsEngineerGPT.txt",
+          "file_size": 2278,
+          "file_type": "text/plain",
+          "s3_url": "https://cdn.filestackcontent.com/PQAUMl1T9iawENJuC0Fh",
+          "label": "SecureSystemsEngineerGPT.txt",
+          "value": "https://cdn.filestackcontent.com/PQAUMl1T9iawENJuC0Fh",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5791,
+          "last_modified": "2025-01-21T01:20:44",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "Top_20_Secure_PLC_Coding_Practices_V1.0.pdf",
+          "file_size": 2009243,
+          "file_type": "application/pdf",
+          "s3_url": "https://cdn.filestackcontent.com/RJqZd0pSTqeFv6G0lSLO",
+          "label": "Top_20_Secure_PLC_Coding_Practices_V1.0.pdf",
+          "value": "https://cdn.filestackcontent.com/RJqZd0pSTqeFv6G0lSLO",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5774,
+          "last_modified": "2025-01-20T23:24:57",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "ufc_4_010_06_2023.pdf",
+          "file_size": 4683193,
+          "file_type": "application/pdf",
+          "s3_url": "https://cdn.filestackcontent.com/SrpJRu2cRIWRMYEtYgGm",
+          "label": "ufc_4_010_06_2023.pdf",
+          "value": "https://cdn.filestackcontent.com/SrpJRu2cRIWRMYEtYgGm",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5766,
+          "last_modified": "2025-01-20T23:05:54",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "ISA IEC_62443-4-2.pdf",
+          "file_size": 1754476,
+          "file_type": "application/pdf",
+          "s3_url": "https://cdn.filestackcontent.com/Su6FvcuiRRFKNrqvooSc",
+          "label": "ISA IEC_62443-4-2.pdf",
+          "value": "https://cdn.filestackcontent.com/Su6FvcuiRRFKNrqvooSc",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5745,
+          "last_modified": "2025-01-20T22:44:46",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        },
+        {
+          "file_name": "HardwareHacker.pdf",
+          "file_size": 15315283,
+          "file_type": "application/pdf",
+          "s3_url": "https://cdn.filestackcontent.com/tGuPxy76RyeNWIqtfEGu",
+          "label": "HardwareHacker.pdf",
+          "value": "https://cdn.filestackcontent.com/tGuPxy76RyeNWIqtfEGu",
+          "knowledgebase": "ICS OT IoT",
+          "id": 5753,
+          "last_modified": "2025-01-20T22:56:10",
+          "session_id": null,
+          "kbid": "zt6e0pipkfsjnk2i"
+        }
+      ]
+    },
+    {
+      "label": "Show User Output",
+      "type": "output_formatter",
+      "category": "Create Output",
+      "tooltip": "Format and display results to users in HTML, JSON, tables, or other formats.",
+      "inputs": [
+        {
+          "type": "text",
+          "value": "Threat Model Report",
+          "name": "heading",
+          "label": "Heading",
+          "hint": "Provide a heading for the output display, such as 'User Results' or 'Analysis Summary'.",
+          "required": false
+        },
+        {
+          "type": "textarea",
+          "value": "{{LLM_threatModel_output}}",
+          "name": "output_formatted",
+          "label": "Output Formatted",
+          "hint": "Enter the formatted output, such as '<h1>Results</h1><p>Details go here</p>' for HTML or 'key: value' for JSON-like displays.",
+          "required": true
+        },
+        {
+          "type": "dropdown",
+          "value": "markdown",
+          "name": "format",
+          "label": "Format",
+          "required": true,
+          "hint": "Select the format for output display, such as 'HTML', 'JSON', 'Table', or 'Markdown'.",
+          "options": [
+            {
+              "label": "Auto",
+              "value": "auto"
+            },
+            {
+              "label": "HTML",
+              "value": "html"
+            },
+            {
+              "label": "JSON",
+              "value": "json"
+            },
+            {
+              "label": "Table",
+              "value": "table"
+            },
+            {
+              "label": "Markdown",
+              "value": "markdown"
+            },
+            {
+              "label": "Audio",
+              "value": "audio"
+            },
+            {
+              "label": "Text",
+              "value": "text"
+            },
+            {
+              "label": "JSX",
+              "value": "jsx"
+            }
+          ]
+        }
+      ],
+      "order": 13,
+      "disabled": false,
+      "id": "97012560-a502-4faa-bf6b-12b46d606d47"
+    }
+  ],
+  "flow": [],
+  "variables": {},
+  "data_sources": null,
+  "tools": [],
+  "module_name": "",
+  "status": "public",
+  "executions": 425,
+  "implementation": "studio",
+  "llm": null,
+  "email_alias": null,
+  "cron": null,
+  "reports_to": "Agent AI Labs",
+  "is_open": false,
+  "is_new_featured": false,
+  "is_approved": true,
+  "marketplace_approved_at": null,
+  "icon": "/icons/action.svg",
+  "colors": {
+    "LLM_threatModel_output": "#cefca4",
+    "attify_iot_mindmap": "#91f2bb",
+    "converted_PDF_files": "#bb81f9",
+    "converted_output_pdf": "#fcdfa1",
+    "ics_ot_iot_knowledge_base_results": "#b98fe8",
+    "iot_ot_ics_agent_knowledge_base_results": "#dba6fc",
+    "iot_ot_ics_component_search_results": "#81f99f",
+    "mitre_emb3d_mitigations_list": "#dcff96",
+    "mitre_emb3d_property_list": "#e6ef86",
+    "mitre_emb3d_threats_list": "#fcda8f",
+    "mitre_embed_mitigations_list": "#f9f998",
+    "mitre_embed_property_list": "#e3ffad",
+    "mitre_embed_threats_list": "#92f972",
+    "openAI_LLM_threatModel_output": "#ce7ef7",
+    "pdf_threatmodel_report": "#6ca5e2",
+    "threatmodel_diagram_image": "#86d7e8",
+    "user_input": "#90f285",
+    "user_input_existing_artifacts": "#70eaca",
+    "user_input_online_search": "#f4d67c",
+    "user_input_online_search_yes_no": "#fff3b5",
+    "user_input_target_component": "#b8f285",
+    "user_input_yes_no": "#f28084"
+  },
+  "price": 1,
+  "salary": null,
+  "approximate_time": 120,
+  "order_id": 99999,
+  "connected_agents": [],
+  "preprocess_endpoint": null,
+  "postprocess_endpoint": null,
+  "bonus_credits": 0,
+  "featured_at": null,
+  "trigger": {
+    "disabled": false,
+    "hint": "Agents can always be run manually, but selecting \u2018Manual Only\u2019 ensures this agent can only be triggered directly from Agent.AI",
+    "label": "Manual Only",
+    "value": "manual"
+  },
+  "trigger2": null,
+  "codeSharing": "{\"label\": \"Just me\", \"value\": \"closed\"}",
+  "shareSetting": "{\"disabled\": false, \"label\": \"Accessible, but not listed in the marketplace\", \"value\": \"public\"}",
+  "submitted_for_review_at": "2025-01-21T07:48:08",
+  "open_sourced_at": null,
+  "enable_read_only": false,
+  "enable_generating_shareable_urls": true,
+  "enable_agent_actions_caching": false,
+  "enable_agent_lead_magnet": false,
+  "enable_agent_lead_magnet_after_executions": 0,
+  "external_url": null,
+  "email_external_webhook_url": null,
+  "hubspot_portals_accessible": null,
+  "reviews_count": 1,
+  "reviews_score": 5.0,
+  "agent_weight": -0.001,
+  "created_at": "2025-01-21T02:40:35",
+  "updated_at": "2026-08-07T07:59:54",
+  "published_at": "2026-04-09T14:50:12",
+  "mcp_approved_at": null,
+  "embedding": "[-0.008460935, -0.042503122, -0.008046007, -0.0059713637, 0.010355175, 0.0221175, -0.0012628261, 0.05502314, -0.0029247957, 0.030831, 0.0072116395, -0.026880158, -0.021774732, -0.00016461841, 0.007622058, 0.052641813, -0.030776879, 0.028395548, -0.0037636731, -0.024336465, 0.01057166, -0.020566026, -0.018283918, -0.0014240621, -0.004056829, 0.0023903495, -0.015496681, 0.026771916, -0.00033487444, 0.014540542, 0.007464205, 0.01971813, 0.015045672, 0.040626924, 0.0056782076, -0.01632654, 0.0022719596, 0.00916, -0.0033194288, 0.028287306, -0.033086047, -0.013070251, -0.08818135, -0.0076400987, -0.0011872821, 0.0071981093, -0.007035746, 0.019447524, -0.04686889, 0.024913756, 0.015072732, -0.03463752, -0.0173819, 0.022207702, -0.026789956, -0.019014554, 0.02987486, 0.045064855, -0.014802127, -0.007676179, -0.0007374003, -0.006462964, -0.02554517, 0.051775873, 0.0029180306, 0.0462916, -0.030127425, -0.0046002953, 0.0031480454, 0.008041496, 0.040663004, 0.035629738, 0.022568509, 0.0016405465, 0.009281772, -0.031733017, 0.025003958, -0.0019641458, 0.020169139, -0.04668849, 0.023181882, 0.0065802266, -0.021630408, 0.054662336, 0.024895716, -0.052353166, -0.04102381, -0.100015834, -0.022388104, 0.019050635, -0.0041628163, 0.003472772, -0.006332171, 0.02025934, -0.01632654, 0.008984107, -0.013259675, -0.0060931365, 0.008781152, -0.012411778, -0.030001143, -0.030073304, -0.035774063, -0.038750723, 0.009994367, 0.007080847, -0.011076789, 0.0043026293, 0.005452703, 0.04492053, -0.012781605, -0.013124372, -0.046075117, 0.01686775, -0.021756692, 0.042683527, -0.0075904876, -0.018635707, -0.042250555, -0.026176583, -0.024011739, -0.055889077, 0.030560395, -0.04344122, -0.005335441, 0.029947022, -0.007604018, 0.052353166, 0.00036390818, -0.008077578, -0.048348203, -0.0012335106, 0.011383476, 0.019682048, -0.0071530086, -0.021486085, 0.045028772, -0.0021513146, -0.0094260955, -0.010030448, -0.07728496, -0.031137686, -0.02067427, 0.03667608, 0.018013313, -0.010337135, 0.025166322, -0.0067245495, -0.051703714, -0.0042304676, 0.0034772821, 0.0030217627, -0.0014195519, -0.0085285865, 0.0035900346, -0.03514265, 0.004780699, -0.001902132, 0.0050422847, 0.017634466, 0.0082219, -0.01881611, -0.0005513589, -0.012447858, -0.00675161, -0.0010835499, 0.03763222, -0.010066529, -0.009795923, 0.031173768, 0.023326203, 0.009768862, 0.013945209, 0.010454397, 0.00075036683, -0.007319882, 0.018491384, -0.00578645, 0.011311315, -0.0327072, -0.01597475, 0.055852998, -0.0057458594, 0.009326873, -0.007288311, 0.025076121, 0.036080748, -0.016813628, 0.040302195, -0.04921414, 0.0038358346, 0.020656228, 0.0090472475, -0.003515618, 0.013728725, 0.034511235, 0.050440885, 0.012664342, -0.044559725, -0.05401288, -0.008100128, -0.06126511, 0.013295756, -0.011473678, -0.029640336, 0.008339163, -0.013331836, -0.027926499, 0.021431964, -0.008880374, 0.03799303, -0.022424186, 0.041059893, 0.018635707, -0.019988734, 0.032598957, 0.02603226, 0.011915667, -0.011185032, -0.03133613, 0.05448193, -0.019140838, 0.015541783, 0.024101939, -0.008560157, -0.021630408, 0.01832, 0.032923684, -0.03660392, 0.00033656572, -0.035972506, 0.033068005, 0.0017645741, 0.008384264, -0.035395212, -0.020998996, 0.021287642, -0.020421704, 0.030740798, -0.023813294, 0.014748006, 0.0048979614, -0.019826371, -0.02558125, -0.0013406253, -0.046580248, -0.009994367, -0.0130882915, 0.041781507, 0.0102469325, -0.043008253, -0.03849816, -7.42756e-05, -0.0027940029, 0.02411998, 0.0014082767, -0.00048483507, -0.021305682, 0.0032495223, 0.0113383755, -0.011248173, -0.012195293, 0.020998996, 0.0047987397, -0.0066253273, -0.015460601, 0.026338946, -0.046255518, -0.012583161, -0.021973176, 0.017508183, -0.028016701, -0.0022990203, 0.040807325, -0.005448193, -0.01687677, -0.025220443, 0.056538533, -0.0083346525, -0.0043026293, 0.015965732, 0.012655322, 0.025418887, 0.02413802, -0.04102381, 0.015650025, -0.013827947, -0.036387436, -0.0010130798, 0.015595904, 0.005407602, 0.006900443, 0.037271414, 0.027331168, 0.025978139, 0.020133058, 0.007536366, 0.0051866076, 0.022839114, 0.0075589167, 0.0070582964, -0.03950842, 0.0034953225, -0.009119409, 0.019339282, 0.04917806, 0.022315944, 0.021125278, -0.009114899, 0.003328449, 0.021919055, -0.040338278, -0.018707868, -0.016714407, -0.000832676, -0.005339951, -0.009380994, -0.024895716, 0.0111218905, -0.016452821, -0.0075002857, -0.009119409, -0.045137018, 0.017336799, 0.010355175, -0.0018412457, -0.037523977, -0.019050635, -0.023055598, -0.0059713637, -0.045028772, -0.012204313, 0.01012065, -0.0032946235, -0.024913756, -0.053940717, -0.036369395, 0.03853424, 0.008235431, -0.0061337273, -0.013918148, -0.002697036, -0.0036013096, 0.024372546, 0.0003929419, 0.007378513, 0.007531856, -0.014369158, 0.031570654, 0.02354269, 0.00093979074, -0.033428814, 0.07742929, -0.02693428, 0.0051369965, 0.014107573, -0.060976464, -0.012952989, -0.009335893, -0.0082219, -0.0007554407, -0.0059082224, 0.0096516, -0.02504004, 0.022803033, -0.0075544068, 0.018581586, 0.0017397685, -0.0221175, 0.010237913, -0.011365436, 0.053146943, -0.042214476, 0.01975421, -0.03326645, -0.03380766, -0.004004963, -0.0063457014, 0.0036870015, 0.00868193, -7.1351087e-06, -0.0072973315, 0.010553619, 0.037956946, 0.024715312, 0.0066704284, 0.007134968, -0.04668849, 0.009254712, 0.0034096306, -0.032039706, 0.009913186, -0.048348203, -0.003513363, 0.018139597, -0.008785662, 0.020133058, -0.017508183, 0.046580248, -0.0075949975, -0.03045215, 0.0017950173, -0.002557223, 0.009516298, -0.00962454, -0.046039034, -0.0050693452, -0.0060390155, 0.016001811, -0.0039891778, -5.7292284e-05, -0.03429475, -0.011906647, 0.003912506, 0.040915567, -0.002888715, 0.027204884, -0.005876652, -0.011464658, -0.028702235, 0.030650595, 0.02218966, 0.011789384, 0.03234639, -0.01928516, 0.025310645, -0.01979029, -0.0013767061, -0.017643485, -0.008235431, -0.005975874, 0.018049395, 0.015189995, -0.03384374, -0.015659045, -0.005091896, -0.026753874, -0.031606734, 0.039724905, -0.0016484392, 0.019158877, -0.030181546, -0.018419223, -0.00030725013, -0.012772585, -0.028810477, -0.02121548, -0.0014567602, -0.013891088, 0.028251225, -0.03525089, -0.010661861, -0.04243096, -0.012339616, 0.0026474248, 0.012871807, 0.012204313, 0.0040793796, -0.011347395, -0.0025391828, -0.0052903397, -0.012619242, 0.030524313, 0.014585642, -0.017210517, 0.003946332, 0.0031660856, 0.004149286, 0.008740561, 0.06180632, 0.030957282, -0.037668303, 0.016434781, 0.0038335796, -0.024552949, 0.03126397, -0.027168803, -0.049935754, 0.014865268, -0.014287977, 0.014351117, -0.043585543, 0.02655543, -0.0040365336, 0.04484837, -0.020115018, 0.044162836, -0.009344914, -0.031011403, 0.0032607976, -0.019086717, -0.004521369, 0.016524984, -0.019104756, 0.024156062, -0.026970359, 0.020457784, -0.018437263, 0.020367583, 0.028666155, 0.008578198, 0.023650931, 0.023957618, -0.0052768094, -0.023578769, 0.029622294, -0.019140838, -0.009777883, -0.01590259, 0.012087051, 0.0051009157, 0.022081418, 0.007085357, -0.016137116, -0.0269884, 0.007622058, 0.0075093056, -0.0057142884, 0.0061878483, 0.010544599, 0.0021513146, -0.013025151, 0.0125561, -0.008600748, 0.029117163, -0.0015954456, -0.008582708, -0.02504004, -0.0010531069, 0.0003960426, 0.022388104, 0.012501979, 0.019086717, 0.03705493, 0.0051911175, 0.02752961, -0.009435115, 0.023217961, 0.019844411, -0.03853424, 0.042683527, 0.013097311, -0.001928065, -0.024552949, 0.013440079, 0.028575953, 0.026663672, 0.006296091, 0.020331502, -0.011500739, -0.030416071, -0.0049971836, 0.0030533334, 0.010508518, 0.03384374, 0.029189326, -0.028575953, 0.012583161, -0.0061968686, -0.014143653, 0.02843163, 0.029297568, 0.029965062, 0.012998089, 0.00012867861, -0.0019122796, 0.01879807, -0.018942393, -0.016191237, 0.021089198, 0.037307493, -0.0041515413, -0.012420798, -0.015171954, -0.010174771, 0.0101928115, -0.0017532989, 0.020115018, 0.0063006007, -0.050693452, -0.0037997537, -0.0014714181, 0.0003224717, -0.043621626, -0.022929316, 0.007843053, 0.0054797637, -0.026050301, -0.02505808, -0.03575602, -0.008605259, -0.013557341, 0.042070154, -0.019736169, 0.013061231, -0.008064047, 0.013827947, 0.008578198, 0.01444132, -0.018283918, -0.013746765, 0.0012436582, 0.0066163074, 0.013440079, -0.028179064, 0.0472297, 0.025689492, 0.012673363, -0.022153579, 0.010319094, 0.006120197, 0.0058541014, 0.020926835, -0.008957046, 0.042070154, 0.014098552, -0.022153579, -0.012411778, -0.009362955, -0.011798405, 0.021792771, -0.07771793, 0.03030783, 0.001071711, -0.023650931, -0.010995608, 0.0015176465, -0.033825703, 0.0059082224, 0.015361379, -0.0055699656, 0.00016475936, -0.021323722, 0.0016202511, -0.0051415064, -0.028323388, 0.007937765, 0.0074596945, 0.021882974, 0.003366785, 0.0006449434, 0.011491719, 0.018942393, 0.0357019, -0.01641674, -0.023903497, 0.007991886, 0.017210517, 0.007283801, -0.011978809, 0.0074416543, 0.0064990446, 0.029207366, 0.008569178, 0.04084341, -0.013611462, 0.002500847, -0.029766617, 0.008871354, 0.056141645, -0.012510999, -0.023759173, 0.0035111078, 0.02262263, 0.015956711, 0.0007751723, 0.012844746, -0.02218966, -0.005335441, 0.051811956, 0.0037794583, -0.035359133, 0.00012311146, 0.007166539, -0.0026902708, 0.005754879, -0.0020160119, 0.0066253273, 0.0018344806, -0.0056421272, -0.039833147, -0.009940246, -0.07872819, 0.009832004, 0.020818591, 0.0012492959, -0.0549149, 0.019555766, 0.03324841, -0.0016529493, -0.016759507, 0.013999331, 0.027240966, 0.016182216, -0.008618789, -0.01545158, 0.003080394, -0.009967307, -0.025328685, -0.021341763, -0.008510547, -0.013422038, 0.000319371, 0.009051758, 0.012285495, 0.0068237716, -0.009038228, 0.046652406, 0.017553285, -0.032635037, 0.008911945, 0.0062690303, 0.010237913, 0.0569715, -0.016985012, -0.002500847, 0.023741132, -0.040230036, -0.02505808, -0.0055564353, 0.008632319, -0.0026789955, 0.003269818, -0.03709101, 0.017553285, -0.044198915, 0.0018897292, 0.030542353, 0.032057744, 0.00060548005, -0.013692644, -0.039255854, 0.03460144, 0.009832004, -0.033915903, -0.023867415, -0.0018085475, -0.015307258, 0.032472674, 0.015677085, 0.018121555, -0.011293274, 0.0057458594, -0.028666155, -0.01542452, -0.009453156, -0.022243781, 0.0085285865, -0.029965062, 0.011437598, -0.0050964057, -0.009236672, 0.011969788, -0.01689481, 0.017995274, 0.0395445, 0.0037704383, -0.013665584, -0.013376937, -0.0007537494, 0.03231031, 0.017616425, -0.01926712, 0.00264968, 0.023524648, 0.00675161, 0.004476268, -0.033176247, 0.020998996, -0.016281437, -0.004952083, 0.026844077, -0.022315944, -0.02168453, 0.04567823, 0.020349542, 0.015226075, -0.029045003, 0.003328449, -0.022081418, -0.0035336583, 0.0005958961, -0.009750823, 0.012366677, 0.015343338, -0.0023407387, 0.020331502, -0.0034908124, 0.0113924965, -0.0015108814, 0.022225741, 0.008866844, -0.024192141, -0.0017375136, -0.008361713, -0.012240394, 0.0031119646, 0.01878003, 0.0033961004, 0.00337355, 0.013322816, -0.0036734713, -0.017508183, 0.027114682, -0.013449099, -0.03566582, -0.0009183678, 0.0021546972, -0.031011403, 0.008077578, -0.016055932, 0.006900443, -0.0027601772, 0.046508085, -0.012276474, -0.012637282, -0.041276377, 0.0011297785, 0.02072839, -0.05495098, -0.012456878, 0.014982531, -0.013882068, 0.018924352, -0.019609887, 0.031282008, 0.004196642, -0.00078024616, 0.007522836, -0.046977136, -0.006458454, 0.013575382, -0.034402993, -0.014585642, -0.027691975, 0.01594769, 0.0064313933, 0.030253708, -0.010833245, 0.019970695, 0.011365436, -0.007865603, -0.015099794, 0.00018364537, -0.025256524, 0.006787691, -0.0012650812, -0.010409296, -0.032941725, 0.022983437, -0.035936426, -0.009841024, 0.013178494, -0.015072732, -0.010346155, -0.01737288, 0.019393403, -0.0038899556, 0.0076987296, -0.007861093, -0.028702235, 0.0025301625, 0.025166322, -0.02451687, -0.013097311, -0.034132387, -0.018545505, -0.030289788, -0.03133613, 0.0030984343, -0.015776306, -0.025328685, -0.0066749384, -0.013737745, -0.0068192612, -0.008140719, 0.013025151, 0.007888153, -0.0060480353, -0.019447524, -0.031029444, 0.014405238, -0.0021298917, -0.03943626, -0.024029778, -0.0425392, 0.012709443, -0.014378178, 0.015307258, 0.0033419793, 0.022965396, 0.009232162, -0.020800551, -0.048925497, 0.021125278, 0.022893235, -0.025184363, -0.039724905, -0.028521832, 0.018834151, -0.008767622, -0.01445936, 0.029712496, -0.0047852094, 0.010806184, 0.009949266, -0.00481678, -0.01887023, 0.01878003, -0.01590259, 0.03763222, 0.0036486657, 0.008424855, 0.005263279, 0.0060931365, -0.0049475725, -0.02411998, 0.03378962, 0.015090773, -0.0111760115, 0.022875195, 0.010292034, 0.018031353, 0.0044604824, -0.01638066, 0.0069320137, -0.009078818, 0.018446283, 0.0035471886, 0.004189877, 0.024769435, 0.013286736, -0.019411443, -0.016119074, -4.7954978e-05, -0.009141959, -0.020493865, -0.010048488, -0.005984894, -0.013268695, 0.011978809, 0.03321233, 0.0141797345, -0.025292605, 0.026916238, 0.0041740914, -0.0121592125, 0.008041496, -0.013746765, -0.0093719745, -0.01687677, -0.00819484, -0.027619813, 0.013322816, 0.030343909, -0.008718011, -0.02123352, -0.023290124, 0.039652742, 0.0122674545, 0.018924352, -0.001906642, -0.011699183, 0.019988734, 0.022803033, 0.015704146, -0.0067696506, 0.018446283, -0.015253136, -0.021937095, -0.03360922, -0.010481457, 0.0012673363, 0.026050301, -0.005091896, -0.013791866, -0.009696702, -0.00030696826, -0.0082805315, 0.009024697, 0.011780364, -0.020349542, -0.01789605, 0.004007218, 0.027655894, -0.0070131957, -0.020547986, 0.00081181683, 0.014333078, 0.012294515, -0.021864934, 0.025527129, -0.028738316, -0.031931464, -0.014242875, 0.016777549, -0.013196534, -0.005218178, 0.007933254, -0.027349208, -0.030181546, -0.0030104874, -0.0010784761, -0.0043995962, 0.006837302, 0.030343909, -0.011419557, -0.017120315, -0.032977805, 0.0138550075, 0.00409291, 0.014693885, 0.03281544, -0.023777213, -0.0064810044, 0.044126756, 0.028142983, 0.014071492, -0.0031954013, 0.042647444, 0.018004293, -0.035774063, -0.017336799, 0.0003269818, -0.005200138, 0.034330834, -0.0055564353, 0.0001410109, 0.011455637, 0.034060225, -0.00022296775, 0.011275234, 0.008131699, 0.012312556, 0.00024875984, 0.01057166, -0.0031525553, -0.058486894, -0.02264067, 0.00069229933, 0.014053452, 0.00313677, 0.023380324, 0.005019734, -0.010093589, 0.012637282, -0.022550467, 0.00722968, 0.0061472575, 0.01786899, -0.015659045, -0.018924352, -0.008835273, 0.0010920065, -0.021431964, 0.004293609, -0.028124943, -0.04152894, 0.034114346, 0.0049250224, 0.0015323043, -0.030235667, -0.014738985, -0.0006669301, 0.007283801, 0.011266214, 0.0118886065, 0.013214574, 0.010382235, 0.0009324618, 0.008704481, 0.009399035, 0.01887023, 0.031426333, 0.00966062, 0.029279528, 0.013728725, -0.0025662433, -0.02069231, 0.008023457, -0.0029338158, -0.03039803, -0.026140502, 0.015199015, -0.009281772, -0.033374693, -0.020421704, 0.013304776, 0.015171954, -0.0047987397, -0.027240966, 0.010237913, 0.008487996, -0.008018946, -0.018599626, -0.022135539, 0.014360138, 0.034078266, 0.033428814, -0.025166322, 0.0021964156, -0.028467711, -0.034042187, -0.0026406597, 0.006029995, 0.026735835, -0.012943968, 0.0023407387, 0.019736169, -0.004744618, -0.0023429936, -0.00033684762, 0.023813294, 0.005055815, 0.026609551, 0.009886125, -0.011482698, 0.0036351355, 0.016939912, -0.0024331955, 0.0044920533, -0.011148951, -0.013611462, 0.0044266568, 0.000489627, -0.02848575, -0.0007390916, -0.006070586, 0.03180518, 0.007820502, -0.026212664, 0.008803703, 0.055852998, 0.017336799, 0.0012165977, 0.019158877, -0.016678326, 0.028846558, 0.027836297, 0.003617095, -0.011717223, 0.006350212, -0.00289548, 0.0037817135, -0.028575953, -0.011148951, -0.012709443, 0.02843163, -0.0027353717, 0.010174771, -0.012114111, -0.010355175, 0.013665584, -0.012943968, -0.016723426, 0.012943968, 0.004286844, -0.019682048, -0.019447524, 0.0043702805, -0.025869897, 0.02841359, 0.00023156512, 0.0011624766, 0.0016495667, -0.0012741014, -0.0036216052, -0.004870901, 0.004291354, 0.017508183, 0.0014984786, 0.0028593994, 0.024228223, 0.017742708, -0.013782846, 0.003479537, -0.022297902, -0.02888264, 0.016488902, -0.025779694, 0.0029315609, -0.014098552, 0.002235879, -0.0027940029, 0.0055203545, -0.0062554996, 0.017562304, -0.024210183, 0.02991094, 0.011311315, -0.014423279, 0.014766046, -0.024354504, 0.008636829, -0.0040545743, -0.022352023, 0.0062509896, 0.0073965536, -0.019104756, 0.019826371, -0.016912851, -0.013413019, 0.010030448, 0.008961556, 0.008316613, 0.022532428, -0.024643151, -0.00673357, 0.0003780022, 0.011753304, 0.0013879813, 0.009344914, 0.0073334123, -0.006995155, -0.017472103, -0.022496346, -1.7485421e-05, -0.016687347, 0.020060897, 0.0031209846, -0.002458001, 0.031624775, -0.0069726044, -0.0038516198, -0.011112871, 0.0048348205, 0.0056195767, -0.011969788, -0.003269818, 0.017905071, -0.011464658, -0.017030112, 0.011464658, 0.021071156, -0.009245692, 0.005975874, -0.017048154, 0.008835273, -0.008046007, 0.008379754, -0.005475254, 0.022406144, -0.029586215, -0.027277045, 0.0008845421, 0.0030736288, 0.018256858, -0.028467711, -0.012565121, 0.026663672, -0.020439744, 0.027944539, -0.0046002953, -0.0034434565, -0.023849376, -0.025797736, 0.021486085, 0.022839114, 0.008884884, 0.030668637, -0.0036937667, -0.0012233629, 0.012330595, 0.010084569, -0.007098887, -0.007423614, -0.014991551, -0.0032901133, 0.026122462, -0.0049295323, -0.022261823, -0.021810813, 0.0020566026, -0.021161359, -0.0032472673, 0.014513481, -0.014621723, -0.01204195, -0.01252002, -0.010093589, 0.039291937, 0.0112842545, 0.007797952, -0.040699083, 0.010183792, -0.0025730084, 0.013972269, -0.028106904, 0.012258435, -0.006945544, 0.007838543, -0.015839448, 0.017454062, -0.011825466, -0.012871807, -0.0055744755, 0.006945544, 0.019862453, -0.019609887, -0.006471984, 0.0009138577, 0.0024534909, 0.003761418, 0.0038922108, -0.0050828755, -0.038750723, -0.010725003, -0.013728725, 0.00025608874, 0.01686775, -0.009006657, -0.00021225627, -0.013367917, 0.022333983, 0.010337135, -0.030506272, 0.012826706, 0.03144437, -0.0020126293, -0.0063772723, 0.0066839587, 0.0015435795, 0.017607406, -0.0130882915, 0.002606834, -0.010039468, -0.010003388, 0.01496449, -0.0064268834, 0.002936071, -0.01105875, -0.025942057, 0.012916908, -0.017454062, -0.010752063, 0.012258435, 0.026266785, -0.0015537272, 0.011446618, -0.0006652388, 0.021468045, -0.032635037, -0.00048286188, -0.021576287, -0.0009285155, -0.011112871, -0.0014229345, -0.025473008, 0.022803033, -0.012150192, -0.02987486, -0.027024481, 0.023831334, 0.0015390695, -0.0069545642, -0.009859065, -0.008046007, 0.014847228, 0.006945544, 0.018455302, 0.0044537173, -0.044451483, 0.001660842, -0.014666825, 0.006417863, -0.015235096, 0.0019201724, -0.013394978, 0.013719705, -0.008844294, 0.016173195, 0.014161694, 0.002606834, 0.008104638, -0.031372212, -0.019176917, 0.012574141, 0.01592063, 0.028684195, 0.0042056623, 0.0011320335, -0.0044537173, -0.017120315, 0.022965396, 0.0019596356, 0.018004293, 0.0034006105, -0.03566582, -0.007468715, -0.01641674, -0.0070131957, 0.0041718367, 0.007865603, -0.030596474, -0.007270271, -0.0030758837, -0.0003960426, 0.025924018, -0.031047484, 0.017553285, 0.0034389463, -0.038822886, 0.007482245, 0.014594663, -0.0142338555, -0.0070582964, 0.003569739, 0.0058631217, -0.021125278, -0.00093077053, 0.0006156278, -0.016308498, 0.011419557, 0.02310972, -0.0048077595, 0.0033442343, 0.0035336583, 0.012177252, -0.020115018, -0.042250555, -0.014134633, -0.024029778, 0.017463082, -0.014811147, 0.008501526, -0.007973845, -0.0020193944, -0.02843163, 0.004041044, -0.0071530086, 0.033031926, 0.011879587, -0.012249414, -0.005497804, 0.029063042, 0.0033961004, -0.014684864, -0.02841359, 0.005926263, -0.012601201, -0.0020611128, -0.03759614, 0.008244451, 0.011148951, 0.0042733136, -0.0035810142, 0.0066343476, -0.0004504456, 0.029640336, 0.00265419, 0.010012408, -0.021630408, -0.03319429, 0.0068598525, 0.016227316, 0.019736169, -0.012510999, 0.0006020975, 0.020169139, -0.0013090547, 0.010391256, 0.0019912063, 0.012889847, -0.01872591, -0.029658375, 0.00083774986, 0.005407602, -0.013052211, -0.0021704824, -0.007522836, 0.009940246, 0.024192141, 0.0023745643, 0.014378178, -0.004640886, 0.018473344, 0.052497488, -0.019339282, -0.003139025, -0.03415043, -0.0038425997, -0.022911275, -0.009904166, 0.00030584072, -0.007184579, 0.010075549, -0.008943516, 0.021395884, 0.022478307, -0.021846892, 0.006359232, 0.013755785, 0.0033780602, 0.00038504924, -0.014035411, -0.016191237, -0.010986588, -0.0036396454, 0.009768862, -0.011103851, 0.015235096, 0.023777213, 0.01687677, -0.002981172, -0.026681714, 0.007148498, -0.014576622, 0.03184126, 0.00056714425, -0.0012898868, 0.007757361, -0.022604588, 0.007843053, 0.010427336, -0.03285152, 0.03463752, 0.016182216, 0.009705721, 0.028088862, -0.01346714, 0.007423614, 0.0003842036, -0.009579439, 0.0024467257, -0.010499498, -0.0063411915, 0.027710015, -0.012186273, 0.0029315609, -0.02550909, 0.044126756, -0.028666155, -0.0036892565, 0.006034505, 0.0037839685, 0.0079783555, -0.004050064, -0.029459931, -0.007531856, 0.0037884787, 0.01545158, 0.013764805, -0.008046007, -0.00963356, 0.019465564, -0.0061472575, -0.00021014217, -0.0013530281, 0.017589364, -0.007915215, -0.002505357, -0.012646303, 0.0010841137, 0.016813628, -0.016227316, -0.024011739, -0.00032275356, -0.012655322, -0.0028030232, 0.01012065, 6.1027204e-05, -0.004020748, 0.015226075, -0.0038944657, -0.020493865, 0.016615184, 0.034926165, 0.011004629, 0.0011032816, -0.011248173, -0.009299813, -0.013845988, 0.00041098226, 0.0038335796, 0.0071033975, -0.0110677695, 0.0034502216, 0.005064835, -0.02164845, 0.0040365336, -0.008127188, -0.009687681, 0.023705052, 0.014919389, -0.022027297, 0.003524638, 0.032508753, -0.041276377, 0.013629503, 0.02074643, 0.029117163, 0.0059578335, -0.020205218, -0.015244116, 0.024823556, -0.012222353, 0.016082993, 0.020169139, 0.032220107, 0.00579096, 0.023813294, -0.006895933, 0.0082264105, 0.0022370063, -0.0005364193, 0.010824225, -0.0025391828, -0.007658139, 0.010743042, 0.016615184, 0.024534909, 0.009128429, 0.016696366, -0.010436356, 0.035034407, -0.0001506653, -0.0052407286, 0.0051820977, 0.010878346, 0.010156731, -0.0015999557, -0.027277045, 0.03613487, 0.00033205564, 0.004045554, 0.0045551946, 0.0041086953, 0.0045597046, 0.020511905, -0.0009268242, -0.012005869, 0.0060931365, -0.017580345, 0.018103516, 0.030831, 0.008181309, 0.023939576, 0.002029542, -0.004034279, 0.015677085, -0.0027421368, 0.007991886, 0.0040230034, -0.0104634175, -0.014847228, 0.006697489, 0.035016365, 0.009480217, 0.011428577, -0.02029542, 0.018635707, 0.030506272, 0.015541783, -0.011563879, -0.0015131364, -0.009832004, -0.025527129, -0.009128429, 0.006796711, 0.02074643, 0.0027872378, 0.027890418, 0.026194623, 0.008086598, -0.0062554996, -0.005691738, 0.007288311, -0.0055248644, -0.005204648, -0.015559822, 0.025887936, -0.010328114, -0.0039621172, 0.030650595, -0.00577292, 0.021251561, 0.011148951, 0.008623299, -0.012880827, 0.017914092, -0.0110677695, -0.032562874, -0.010436356, 0.003668961, -0.02218966, 0.0045642145, -0.005267789, 0.009281772, 0.010021428, 0.011157972, -0.0078701135, 0.018130576, -0.0058495915, -0.030037222, -0.004501073, 0.001902132, 0.015226075, -0.0027263516, -0.004293609, -0.010472437, -0.0163536, -0.0069545642, -0.013620483, 0.011076789, 0.037271414, 0.009462176, -0.023362285, 0.007410084, -0.005010714, 0.006602777, -0.007432634, 0.009083329, 0.020584067, 0.013683624, 0.0037546528, 0.014522501, -0.0007374003, -0.0036283704, -0.017706627, 0.008975086, 0.008582708, 0.00018223596, 0.018509423, -0.0040320237, 0.0016676071, -0.0069320137, 0.006846322, 0.033428814, 0.022550467, -0.0019269375, 0.01979029, 0.0021659725, 0.01977225, -0.009020187, -0.015325298, -0.009056268, -0.019393403, -0.017986253, -0.0110677695, -0.0031232398, -0.010815204, 0.014143653, -0.014522501, 0.012087051, 0.019357322, -0.0051911175, 0.016434781, -0.0046544163, 0.0015954456, 0.024372546, -0.015460601, -0.0053174, -0.01108581, 0.011419557, -0.013827947, -0.008321122, -0.023849376, -0.005488784, 0.005511334, 0.004047809, -0.010364195, 0.007567937, -0.002800768, 0.024282344, 0.006805731, -0.0019077696, -0.0062464797, 0.015433541, -0.011049729, -0.001159094, -0.0150005715, -0.008641339, 0.013891088, 0.01739994, -0.027565692, 0.0033126636, 0.006160788, 0.0039260364, -0.00017645741, -0.0021919054, -0.006539636, -0.015532762, -0.009020187, -0.0030217627, 0.006602777, -0.0042642932, -0.002451236, -0.0014060216, -0.0028729297, -0.008104638, -0.010589699, 0.022243781, -0.01833804, -0.012989069, 0.018139597, 0.0050828755, -0.005578986, 0.019231038, 0.017210517, -0.020890754, 0.0062870705, 0.013611462, 0.008961556, -0.010553619, 0.00867742, -0.022153579, 0.012565121, 0.012871807, -0.004374791, 0.022460265, 0.006539636, -0.027240966, -0.004758149, -0.0059217527, 0.012700424, -0.019158877, -0.003903486, 0.00820386, -0.009254712, -0.037343573, 0.009543358, -0.012195293, 0.011843505, 0.0029653865, 0.0070582964, 6.7193345e-05, 0.011293274, 0.0045416644, -0.0016800099, 0.009804944, 0.0020814082, -3.2574855e-05, -0.021540206, 0.0106348, 0.001956253, -0.0069275037, -0.008542117, 0.028052783, 0.009822984, 0.016732447, -0.005105426, -0.010842265, 0.004501073, -0.0067786705, 0.0030285278, -0.0019833136, 0.01399031, -0.0012019399, -0.00918255, 0.015559822, -0.017625446, 0.011022668, -0.029514052, -3.0178868e-05, -0.0014714181, 0.007085357, -0.0096516, -0.0019618906, 0.001012516, -0.028088862, -0.012303535, 0.0031976562, 0.0028120433, 0.015180975, -0.012790625, -0.0031570655, 0.021179399, 0.00025087394, 0.006602777, 0.009335893, 0.012682383, 0.01977225, -0.008375243, -0.027926499, -0.002936071, 0.038822886, 0.029171284, 0.025942057, -0.03378962, -0.02072839, 0.022370065, -0.0067561204, 0.023957618, 0.01682265, 0.010310074, 0.008095618, 0.011978809, 0.007933254, -0.0049475725, 0.0024647661, -0.009489236, -0.019645968, -0.01979029, -0.0068102414, -0.0060029346, -0.0034637519, -0.006602777, 0.009813963, -0.022911275, -0.005024244, -0.010833245, -0.008091108, 0.008555648, -0.022821072, 0.0013564107, 0.009904166, -0.030668637, -0.0090472475, -0.005872142, 0.0048032496, 0.0022516642, 0.007180069, 0.026411109, 0.00019647095, 0.029369729, 0.0093178535, -0.004611571, -0.019537725, -0.017084233, 0.019339282, -0.025761655, -0.023326203, -0.023723092, -0.007743831, -0.028864598, -0.0060029346, -0.014026391, -0.012962009, -0.004300374, 0.007604018, -0.0054662335, 0.0066839587, 0.012465899, -0.032725237, 0.009114899, 0.0087450715, 0.0034479664, 0.0011123018, 0.013945209, 0.007622058, 0.009859065, -0.005493294, 1.14073655e-05, 0.002354269, 0.0078701135, -0.0110677695, -0.010102609, 0.0024399606, -0.0042259577, 0.0130341705, -0.011879587, 0.031372212, 0.0077708913, -0.002046455, 0.0005696812, -0.0006607287, -0.021431964, -0.0070898673, -0.016010832, 0.0138550075, -0.012565121, 0.0036667062, 0.0041244808, 0.008384264, -0.010264973, 0.02985682, -0.0051820977, 0.02841359, -0.0051911175, 0.023939576, -0.007667159, -0.01545158, -0.020620149, 0.0053219106, -0.008055027, -0.017589364, -0.01300711, 0.006692979, -0.014242875, 0.0018299705, 0.0035607188, 0.029297568, -0.00962454, -0.012772585, -0.022568509, 0.0046814773, -0.010977568, 0.0104634175, -0.018013313, 0.006959074, 0.011212093, 0.01057166, -0.015244116, -0.019050635, -0.019970695, -0.00080730673, 0.031173768, 0.004289099, -0.012141172, -0.0013823437, 0.009353934, -0.015496681, 0.012384717, 0.021594329, 0.0021366568, 0.005015224, 0.015298237, 0.012402757, 0.0022257313, -0.03037999, 0.020493865, 0.006350212, 0.025725573, -0.0014939685, 0.021341763, 0.010887366, -0.00917353, 0.019898532, -0.0010435228, -0.0050377743, 0.009399035, 0.015018611, -0.0069275037, 0.010697942, -0.010255952, 0.011518779, -0.0077889315, 0.013277715, 0.0016010832, 0.013052211, 0.006661408, 0.0044108713, -0.021359803, -0.019176917, 0.0003472772, 0.017111296, 0.0042733136, -0.0016698622, -0.020908793, -0.005200138, -0.023326203, -0.016037893, 0.017021094, 0.0028030232, 0.0073559624, -0.015677085, -0.0064359037, 0.004293609, -0.008560157, -0.03550346, -0.008754091, -0.0021670999, 0.011780364, -0.022207702, -0.003175106, 0.006413353, -0.006210399, -0.026104422, -0.012465899, -0.010562639, -0.010264973, -0.014639764, -0.0003252905, 0.0096516, -0.00038335795, -0.00819033, -0.00722517, -0.0014161693, -0.012781605, 0.0076987296, 0.0032517775, 0.013151432, 0.011563879, 0.0077483407, -0.0017397685, -0.01789605, -0.017030112, -0.00039970703, 0.015397459, -0.00816327, -0.0026677204, -0.00012811484, -0.015271177, -0.0013113098, -0.0038448547, 0.0052226884, -0.008591728, -0.0026158544, -0.0040681046, 0.0003396664, 0.00018195409, 0.020529946, -0.01544256, 0.004762659, 0.013891088, 0.013773826, -0.01108581, -0.0012695914, 0.0063457014, -0.01254708, 0.016534002, -0.0070628063, -0.018238818, 0.004038789, -0.0016461841, -0.001251551, 0.0060931365, -0.021810813, 0.01786899, -0.033988066, 0.012907888, -0.0027782177, -0.026411109, -0.002065623, 0.023055598, -0.015659045, -0.0001781487, 0.011753304, 0.0040275133, 0.026789956, -0.0026609553, -0.018942393, 0.020529946, -0.02558125, 0.003235992, 0.012727484, -0.016723426, -0.010526558, 0.005583496, 0.009525318, 0.0050422847, 0.0028571442, -0.0183651, -0.015595904, -0.006711019, -0.002701546, -0.018031353, -0.013918148, -0.000506258, -0.005497804, 0.0025256523, 0.036441557, 0.011681142, -0.009214121, -0.015704146, -0.017075215, 0.014161694, 0.0061472575, -0.0039305463, 0.0039282916, 0.0032224618, -0.032075785, -0.017463082, -0.0010728386, 0.01154584, -0.008217391, -0.0050513046, -0.019501645, 0.0043635154, -0.014748006, -0.0024038798, -0.017174436, 0.006508065, -0.0016055933, 0.017553285, -0.016696366, -0.011139931, 0.0011771345, 0.018175676, -0.018581586, 0.031209847, 0.01591161, -0.01445936, -0.012655322, -0.0031277498, -0.0047491286, 0.008893904, -0.010283013, 0.0043116496, 0.0042597833, 0.0075047957, 0.008483486, -0.012456878, -0.02076447, 0.013440079, 0.03474576, 0.01445936, -0.00044255293, 0.0077393204, 0.0056421272, -4.541805e-05, 0.003087159, 0.0010164623, 0.019483604, 0.0035471886, 0.0060029346, 0.004196642, -0.010770103, -0.013079272, 0.030596474, 0.009471197, -0.037523977, 0.009444136, -0.015397459, -0.023398366, 0.0069320137, 0.016966973, -0.023217961, -0.0011410536, 0.013936189, -0.028377509, 0.007991886, 0.0042620385, 0.0062870705, -0.004530389, -0.0027940029, -0.007324392, -0.0055023143, -0.022406144, -0.0009555761, 0.03415043, -0.006661408, 0.024462748, 0.008433875, -0.0041222256, -0.014306017, -0.0040906547, -0.00458, -0.012700424, 0.0075544068, 0.010346155, 0.008113658, -0.02067427, -0.011735263, -0.0005510771, 0.0052271984, -0.013566362, -0.0046634367, 0.020421704, 0.020656228, -0.022893235, 0.002983427, 0.011139931, 0.0035020877, 0.012574141, 0.0058090007, -4.485429e-05, -0.008321122, 0.012736504, 0.004007218, -0.015262157, -0.007026726, 0.0142338555, 0.0043161595, -0.027421368, 0.006904953, 0.015577863, 0.009516298, -0.007189089, -0.009588459, 0.007604018, 0.0129800495, 0.0024963368, 0.015307258, 0.0031209846, -0.0047536385, -1.0429591e-05, 0.014847228, 0.007838543, -0.0019720383, 0.015983772, 0.00031570654, 0.014071492, -0.012411778, -0.0010108247, -0.007180069, 0.032490715, 0.002746647, 0.01204195, -0.008618789, -0.01887023, -0.030740798, -0.016975991, -0.0069275037, 0.009083329, -0.001253806, 0.008975086, -0.020493865, -0.009435115, 0.028756356, -0.008812723, -0.00914647, 0.0113383755, -0.0016833924, 0.005493294, -0.01492841, 0.021395884, 0.00432518, 0.011185032, 0.013674604, 0.012844746, 0.0131424125, -0.0026203643, -0.02123352, -0.0064359037, -0.0025887936, -0.019158877, 0.010400276, -0.0038313244, 0.006359232, -0.01736386, -0.0026338946, 0.013223594, -0.007937765, 0.025942057, 0.012411778, -0.0037433777, 0.008091108, -0.0067471, -0.004381556, 0.023344245, 0.009498257, 0.010923446, -0.013936189, 0.0105175385, 0.008911945, 0.007080847, -0.010174771, 0.006458454, -0.012375697, 0.015244116, -0.0018085475, -0.0017093255, -0.018202737, 0.0066298377, -0.0045957854, 0.006990645, 0.0011838996, 0.009462176, -0.0003754653, -0.03178714, 0.016705386, -0.0009521935, -0.016534002, 0.0063908026, 0.01108581, 0.032418553, 0.023254042, -0.007134968, -0.004956593, -0.0056240866, -0.0073514525, -0.0008287297, 0.009841024, -0.0028210636, -0.01059872, 0.002796258, -0.009471197, 0.012799646, 0.009705721, -0.005736839, -0.0009048375, 0.015135874, -0.0049611027, -0.014811147, -0.014603683, 0.0140173705, -0.013927169, 0.013151432, 0.0063953125, 0.0144774, 0.019862453, -0.0014646528, 0.017210517, -0.005872142, 0.0193032, 0.014008351, 0.021089198, -0.026591511, -0.004861881, -0.01782389, -0.015307258, -0.006656898, 0.02558125, 0.00120645, 0.01203293, -0.020854672, 0.025942057, -0.008393284, 0.003425416, 0.027132723, -0.0074506747, 0.0034750272, 0.030127425, -0.004009473, -0.003468262, 0.016678326, -0.0062915804, -0.016037893, -0.011951748, 0.01881611, 0.0051685674, 0.017517203, -0.010968547, 0.0016450566, -0.0047987397, -0.01446838, 0.007662649, -0.02368701, 0.0021366568, 0.0021355292, 0.021522166, -0.0013845987, -0.010706962, -0.0096516, 0.00046031142, -0.019393403, 0.016308498, 0.035810143, 0.012231374, 0.011410536, -0.0062374594, 0.012682383, -0.0071755587, -0.0035607188, -0.004537154, -0.011004629, -0.007572447, -0.017571324, -0.00338257, -0.00096628757, 0.008961556, 0.0054121125, 0.0029969572, -0.016073974, 0.0328876, 0.006084116, 0.013449099, 0.011987829, 0.0025414377, -0.0040545743, 0.0015864254, -0.00966062, 0.014693885, 0.015740227, 0.0028729297, 0.007879133, -0.007189089, 0.011112871, 0.0013101822, -0.036170952, 0.0077348105, 0.019194959, -0.023199921, -0.00053754676, 0.0149464505, 0.002699291, 0.023831334, -0.0139091285, -0.0027940029, -0.017021094, 0.009335893, -0.006661408, 0.0014804382, -0.014170714, -0.0042597833, 0.00916451, 0.013683624, -0.025617331, 0.0017758494, -0.008925475, -0.009940246, -9.020187e-05, 0.008790173, 0.037343573, 0.013755785, 0.0019686557, -0.0049430626, -0.014260916, -0.02262263, 0.01878003, 0.0010982078, -0.0012143427, -0.022279862, -0.004586765, 0.0011737519, -0.006088626, -0.018112537, -0.037271414, 0.010219872, -0.017553285, 0.006805731, -0.016561063, -0.017021094, -0.0074551846, 0.0019844412, 0.0027331167, 0.00041041852, -0.012682383, 0.0028345939, -0.019609887, 0.0004724323, -0.014107573, -0.011239153, 0.004392831, -0.0013203298, -0.010535578, 0.022370065, 0.001757809, -0.00030809577, -0.0004033715, 0.0099222055, -0.010346155, 0.0064764945, -0.014360138, 0.0063051106, -0.017986253, -0.035395212, 0.009200591, 0.0027060562, 0.0036531757, 0.003033038, 0.0030691186, -0.009994367, -0.029820738, -0.012222353, 0.015992792, 0.012402757, -0.008636829, 0.0046589267, 0.0034096306, -0.011608981, 0.009886125, -0.018653747, -0.044415403, 0.013845988, 0.007482245, -0.028557912, -0.004293609, -0.013864027, -0.018653747, -0.003416396, -0.0037005318, 0.0011179395, 0.0069816248, 0.004920512, 0.021450005, -0.034132387, -0.0092637325, -0.014775067, -0.018888272, -0.0031345151, 0.008244451, -0.006846322, 0.022081418, 0.006156278, 0.0015469621, 0.02413802, 0.0102469325, -0.016227316, -0.001374451, -0.017219538, 0.0022324964, 0.009606499, 0.010454397, 0.0031615756, 0.0060615656, -0.009178041, 0.0026406597, 0.004138011, -0.00918706, -0.012835726, -0.008727031, 0.0077167703, -0.009507277, -0.0032495223, 0.001783742, 0.003461497, -0.012673363, 0.0058135106, 0.0067425896, -0.005015224, 0.00074191036, 0.009768862, 0.012438838, -0.007937765, 0.005827041, 0.019393403, 0.016660286, -0.0050964057, -0.0031705957, 0.0006697489, 0.016777549, -0.008235431, -0.008397794, 0.004388321, -0.013367917, 0.0046499064, -0.014883309, 0.0054166224, -0.02076447, -0.03369942, -0.004198897, -0.0007746086, -0.0015086263, 0.017670546, -0.008510547, -0.022496346, -0.0065306155, -0.005010714, -0.0031548105, 0.005155037, 0.0023035302, -0.014242875, -0.0017454062, -0.005827041, 0.0030984343, -0.010454397, -0.026302865, -0.003953097, 0.00016194055, 0.021053117, 0.0027263516, 0.0025436927, 0.015081753, 0.015045672, -0.021522166, -0.016308498, -0.011636041, -0.012826706, 0.019862453, 0.010833245, -0.0064810044, 0.0041244808, -0.0093178535, 0.006602777, -0.023326203, -0.023236003, -0.0025707532, -0.004185367, 0.012366677, -0.018220779, 0.019736169, 0.018166658, 0.013521261, -0.017463082, 0.02368701, -0.0021795027, -0.0148382075, 0.0038290694, -0.017237578, -0.0046679466, -0.011482698, -0.009029208, 0.008402305, -0.0016450566, -0.024787474, 0.004514604, 0.00578645, 0.023055598, -0.03613487, 0.00016391372, -0.0101386905, 0.00361484, -0.016723426, 0.015821408, 0.020169139, 0.002600069, 0.0063908026, -0.02359681, -0.0025662433, 0.010472437, -0.015460601, -0.00038674052, -0.0029992121, 0.0059984243, 0.0113383755, -0.01446838, -0.0008214008, 0.009096859, -0.0074506747, -0.03759614, 0.014504461, -0.0053850515, -0.011185032, 0.024210183, -0.017138356, 0.008406814, -0.0037929886, 0.0026632103, 0.0008405687, 0.027186844, -0.01971813, -0.025454968, 0.015613944, 0.0007774274, -0.008113658, 0.006647878, 0.00087777694, -0.0051775873, -0.01977225, -0.003711807, -0.0050332644, -0.010725003, 0.003515618, -0.017012073, -0.03330253, -0.0068147513, -0.019573806, -0.027854338, -0.0016405465, 0.013385958, 0.019880492, -0.024733353, 0.019826371, 0.013124372, -0.021864934, 0.005827041, 0.019645968, -0.00264968, -0.016200256, -0.00038053913, -0.0010435228, 0.0062690303, 0.008239941, 0.011185032, 0.002893225, -0.0028729297, 0.0069094636, 0.027024481, -0.0041695815, -0.010806184, 0.016651265, 0.0039282916, -0.012249414, 0.047482263, 0.012123131, -0.022388104, 0.01971813, 0.015235096, -0.016019853, -0.0081722895, -0.005389562, -0.018581586, 0.0070131957, -0.004528134, 0.0027421368, -0.0020994486, -0.007134968, -0.021035077, 0.036982767, -0.005114446, 0.0016585869, 0.0141797345, -0.012339616, 0.002651935, -0.0193032, -0.012844746, -0.0035471886, -0.011383476, -0.0045664697, -0.019158877, 0.004866391, -0.0065486557, -0.02069231, -0.01588455, 0.0029676415, -0.028016701, -0.0015074988, -0.01109483, -0.024246262, -0.004043299, 0.00577743, -0.007567937, 0.009299813, 0.0031457902, -0.0062554996, 0.0024940816, 0.012754545, 0.009741802, 0.012474919, -0.020403663, 0.05545611, 0.0034863022, -0.0046453965, 0.03088512, -0.018437263, -0.0058631217, -0.0070131957, -0.014089532, 0.011139931, -0.0004107004, -0.019212998, -0.01878003, -0.029550133, 0.0056601674, 0.010264973, 0.0017544264, 0.0035111078, -0.0062870705, 0.027601773, 0.013945209, 0.0038719154, 0.003714062, 0.0006607287, -0.027259005, 0.0015525997, 0.0007283801, -0.01012065, 0.018906312, 0.0028030232, 0.0017420236, -0.037307493, 0.0031908911, 0.005452703, -0.0035945445, -0.012186273, 0.0011455638, -0.004616081, -0.0060976464, -0.012231374, -0.0069635846, -0.024823556, 0.0033803151, -0.0064359037, -0.00032613613, -0.029965062, -0.012664342, 0.005980384, -0.009417076, -0.0042710584, -0.007919724, 0.006138237, -0.020818591, 0.009895145, 0.004870901, -0.009006657, 0.0055880058, 0.008077578, -0.017580345, -0.010968547, 0.0144774, -0.004848351, -0.0055158446, 0.009236672, -0.009114899, -0.007671669, 0.010418316, 0.007374003, -0.0049926736, -0.009967307, 0.009056268, -0.0026744856, -0.0072477204, -0.0122674545, -0.013268695, -0.007035746, -0.03523285, -0.01014771, -0.010977568, 0.0013451354, -0.0045597046, 0.019032596, 0.0083346525, -0.015631985, -0.005339951, 0.014549562, -0.007518326, 0.06472886, 0.013882068, -0.009615519, 0.023344245, -0.010896386, 0.013656563, -0.0023317183, -0.009750823, -0.04394635, 0.025274564, 0.0066388575, -0.012357656, 0.015379419, 0.0078701135, 0.0012966519, -0.0052407286, -0.004185367, -0.0040184935, -0.009795923, -0.016534002, -0.017427001, 0.00918255, -0.023795253, -0.010030448, 0.010544599, 0.014982531, 0.0138550075, 0.011771345, 0.015803367, -0.029153245, -0.0012492959, -0.010860305, 0.008893904, -0.026411109, 0.0039733923, 0.019952653, -0.011266214, 0.011302294, 0.00034417651, -0.00963356, -0.00051894266, -0.013349877, 0.01932124, -0.009786903, -0.0014601428, -0.01732778, -0.0038425997, -0.0007385278, 0.0148382075, 0.013376937, 0.0046544163, -0.022442225, -0.02653739, -0.010878346, 0.020836633, 0.01154584, -0.0006725677, 0.028720276, 0.013674604, -0.008645849, 0.0037388676, 0.024011739, -0.007779911, 0.004038789, -0.040266115, -0.013728725, -0.01204195, 0.008050517, 0.0046025505, 0.026230704, -0.0147299655, 0.014396219, -0.0071079074, 0.0121050915, 0.027222924, -0.012114111, 0.005547415, -0.007324392, -0.010165751, 0.0067245495, 0.010454397, 0.00042423067, -0.0125561, -0.019988734, -0.009380994, 0.0051911175, 0.02844967, -0.0148382075, 0.0025279075, -0.022406144, -0.008298572, 0.008239941, 0.021973176, 0.016732447, -0.0149464505, -0.00578645, 0.008050517, 0.0043139043, -0.00021648449, -0.0065261056, 0.0068824026, 0.033627257, 0.003278838, -0.001154584, 0.0017826145, 0.00018815546, -0.011563879, -0.004532644, -0.0033194288, 0.013836967, -0.0034141408, 0.008005416, 0.030037222, 0.0027421368, -0.011879587, 0.002703801, 0.024643151, 0.015388439, -0.014549562, 0.010851285, 0.011807425, 0.013575382, 0.005439173, -0.0049069817, -0.0078701135, -0.0037298473, 0.0033397244, 0.0063817822, 0.016164176, 0.02603226, -0.0082805315, 0.0038516198, 0.004374791, 0.026176583, -0.018383142, -0.010950508, 0.015361379, -0.002748902, -0.0035877794, 0.019591846, -0.012610221, 0.07403769, -0.005723309, 0.01879807, -0.0017160906, 0.007513816, -0.016570084, 0.0008743944, 0.012799646, -0.0101928115, -0.008095618, 0.0045461743, -0.009096859, -0.007130458, -0.005547415, 0.0076491185, -0.004043299, 0.01775173, 0.025400847, 0.0053309305, 0.0060976464, 0.03429475, 0.007811482, 0.005249749, 0.012989069, 0.013611462, -0.0057954704, 0.009859065, 0.013449099, 0.0015796602, 0.0048573706, -0.019122796, -0.0036960216, -0.019176917, 0.015550802, 0.0037772034, 0.005705268, -0.008668399, 0.015433541, -0.00031598844, 0.013683624, 0.006575716, 0.0041808565, 0.0072612506, -0.004390576, -0.012078031, 0.0083887745, -0.007793442, 0.015226075, 0.0010688922, -0.02164845, -0.002320443, -0.01109483, -0.00018801453, -0.0035449336, -0.0006404333, -0.015352358, 0.0061021564, -0.026735835, 0.020980956, -0.006801221, -0.03516069, -0.00865036, -0.031877343]",
+  "is_premium": false,
+  "require_invocation_approval": false,
+  "exclude_from_trending_agents": false,
+  "profile_config": null,
+  "preferences_settings": {
+    "configurableFields": [
+      {
+        "name": "user_input_target_component",
+        "label": "Hi, I'm here to help you Threat Model Components. What Components or System do you wish to Threat Model today?",
+        "type": "text",
+        "defaultValue": "",
+        "required": true,
+        "settingsOnly": false,
+        "hint": "Configure the default value for \"Hi, I'm here to help you Threat Model Components. What Components or System do you wish to Threat Model today?\""
+      }
+    ]
+  },
+  "ui_config": null,
+  "free_runs_per_period": null,
+  "is_included_in_pro": false,
+  "is_monetized": false
+}

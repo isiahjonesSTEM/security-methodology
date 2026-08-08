@@ -1,0 +1,78 @@
+==============================================================================
+Agent:       IoT_OT_ICS_ThreatModeler
+Agent ID:    gz8gc95xp8lxuj9l
+Description: This agent will help systems engineers, systems security engineers and other professionals with creating a threat model analysis report for various devices, components, applications and systems. It will leverage IoT OT ICS hacking, risk assessment, standards, datasheets, manuals, Attify IoT exploitation mind map and MITRE EMB3D information to help complete a threat model analysis with listed properties, features, interfaces and their associated threats and mitigations. The user will be able to use this agent to help create a threat model report for a device, application, component and or system (e.g. smart meter, PLC, car, thermostat etc) including it's known sub components (e.g. SoC, FPGA etc). It will accept existing artifacts from the user has as well as search the internet for any public information. It will use that information plus an agent builders additional ICS OT IoT knowledge base of artifacts to help generate the threat model analysis report.
+
+Run ID:      16edd67a7ad94194867c23345cc63a31
+Title:       (untitled)
+When:        2025-01-21T06:41:45
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+user_input_target_component: Siemens S7 1500 PLC
+user_input_existing_artifacts:
+    [
+      {
+        "file_name": "s71500_getting_started_en-US_en-US.pdf",
+        "file_size": 17063296,
+        "file_type": "application/pdf",
+        "id": 5830,
+        "knowledgebase": "",
+        "label": "s71500_getting_started_en-US_en-US.pdf",
+        "last_modified": "Tue, 21 Jan 2025 06:42:21 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/ahtnxVtpSE2Z42MFMCd4",
+        "s3_url": "https://cdn.filestackcontent.com/ahtnxVtpSE2Z42MFMCd4",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/wtS3HbxCRJCOd1195fA6_s71500_getting_started_en-US_en-US.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/m80vjrjj_s71500_getting_started_en-US_en-US.txt",
+        "value": "https://cdn.filestackcontent.com/ahtnxVtpSE2Z42MFMCd4"
+      },
+      {
+        "file_name": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "file_size": 346367,
+        "file_type": "application/pdf",
+        "id": 5831,
+        "knowledgebase": "",
+        "label": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "last_modified": "Tue, 21 Jan 2025 06:42:21 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/toXzto2ISB6Hh4f4nXol",
+        "s3_url": "https://cdn.filestackcontent.com/toXzto2ISB6Hh4f4nXol",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/6QnNyYVRSWnRNmYZMzag_01-SIEMENS-S7-1500-Datasheet.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/4upld1tj_01-SIEMENS-S7-1500-Datasheet.txt",
+        "value": "https://cdn.filestackcontent.com/toXzto2ISB6Hh4f4nXol"
+      },
+      {
+        "file_name": "BA_CP1543-1_76.pdf",
+        "file_size": 1966578,
+        "file_type": "application/pdf",
+        "id": 5832,
+        "knowledgebase": "",
+        "label": "BA_CP1543-1_76.pdf",
+        "last_modified": "Tue, 21 Jan 2025 06:42:21 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/XJdAxMfRRsWqpUq7wPFb",
+        "s3_url": "https://cdn.filestackcontent.com/XJdAxMfRRsWqpUq7wPFb",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/PzO4VCz4Q8K4pYd0Lkjx_BA_CP1543-1_76.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/p3pqmsg7_BA_CP1543-1_76.txt",
+        "value": "https://cdn.filestackcontent.com/XJdAxMfRRsWqpUq7wPFb"
+      },
+      {
+        "file_name": "s7-1500-manual-en.pdf",
+        "file_size": 5698490,
+        "file_type": "application/pdf",
+        "id": 5833,
+        "knowledgebase": "",
+        "label": "s7-1500-manual-en.pdf",
+        "last_modified": "Tue, 21 Jan 2025 06:42:21 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/OPLr1LBNT5mNIkzFI2Ae",
+        "s3_url": "https://cdn.filestackcontent.com/OPLr1LBNT5mNIkzFI2Ae",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/rPuBOcZjRBaOxwUWSY21_s7-1500-manual-en.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/l6l5zso7_s7-1500-manual-en.txt",
+        "value": "https://cdn.filestackcontent.com/OPLr1LBNT5mNIkzFI2Ae"
+      }
+    ]
+
+
+OUTPUT
+------
+Now lets see that threat model report.

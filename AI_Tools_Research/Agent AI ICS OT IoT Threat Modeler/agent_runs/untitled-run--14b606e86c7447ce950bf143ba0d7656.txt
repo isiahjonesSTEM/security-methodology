@@ -1,0 +1,36 @@
+==============================================================================
+Agent:       IoT_OT_ICS_ThreatModeler
+Agent ID:    gz8gc95xp8lxuj9l
+Description: This agent will help systems engineers, systems security engineers and other professionals with creating a threat model analysis report for various devices, components, applications and systems. It will leverage IoT OT ICS hacking, risk assessment, standards, datasheets, manuals, Attify IoT exploitation mind map and MITRE EMB3D information to help complete a threat model analysis with listed properties, features, interfaces and their associated threats and mitigations. The user will be able to use this agent to help create a threat model report for a device, application, component and or system (e.g. smart meter, PLC, car, thermostat etc) including it's known sub components (e.g. SoC, FPGA etc). It will accept existing artifacts from the user has as well as search the internet for any public information. It will use that information plus an agent builders additional ICS OT IoT knowledge base of artifacts to help generate the threat model analysis report.
+
+Run ID:      14b606e86c7447ce950bf143ba0d7656
+Title:       (untitled)
+When:        2025-01-21T04:36:39
+Status:      incomplete
+==============================================================================
+
+INPUTS
+------
+user_input_target_component: Siemens S7 1500 PLC
+user_input_existing_artifacts:
+    [
+      {
+        "file_name": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "file_size": 346367,
+        "file_type": "application/pdf",
+        "id": 5802,
+        "knowledgebase": "",
+        "label": "01-SIEMENS-S7-1500-Datasheet.pdf",
+        "last_modified": "Tue, 21 Jan 2025 04:37:09 GMT",
+        "preview_url": "https://cdn.filestackcontent.com/preview/6Dp4qyvSwabh7MUccJFt",
+        "s3_url": "https://cdn.filestackcontent.com/6Dp4qyvSwabh7MUccJFt",
+        "s3_url_full": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/XWSrL8IxRfmLV5RrZ2Za_01-SIEMENS-S7-1500-Datasheet.pdf",
+        "txt_url": "https://s3.us-east-2.amazonaws.com/asset-uploads.agent.ai/pid8b82h_01-SIEMENS-S7-1500-Datasheet.txt",
+        "value": "https://cdn.filestackcontent.com/6Dp4qyvSwabh7MUccJFt"
+      }
+    ]
+
+
+OUTPUT
+------
+Now lets check MITRE EMB3D, Attify IoT Mindmap and other references online. 

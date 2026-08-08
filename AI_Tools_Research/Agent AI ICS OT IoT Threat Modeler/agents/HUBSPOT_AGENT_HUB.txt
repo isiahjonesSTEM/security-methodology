@@ -1,0 +1,25 @@
+How this conversion was made
+============================
+
+Agent.ai agents are workflows: an ordered list of actions, each with its own
+inputs and its own output variable. HubSpot Agent Hub agents are instruction-led:
+you describe the job, enable the tools the agent may use, and it decides how to
+proceed. There is no mechanical one-to-one mapping between the two, so this
+conversion reads the workflow and re-expresses it.
+
+Each action is sorted into one of four buckets:
+
+  - it maps to an Agent Hub tool, and is listed under "Tools to enable"
+  - it maps to a legacy Agent.ai app, listed separately because it needs a
+    different setup in Agent Hub
+  - Agent Hub handles it natively (conditionals, loops, variables, formatting),
+    so it is folded into the instructions instead of being a tool
+  - nothing in Agent Hub corresponds to it, in which case it is called out under
+    "Won't migrate" so you can decide what to do
+
+Steps that collect input from you become the agent's inputs, and the prompt text
+of any language-model step is folded into the instructions.
+
+This conversion is deterministic: the same agent always produces the same
+result. Treat it as a faithful starting point that still deserves a read-through
+before you rely on it, not a finished agent.
