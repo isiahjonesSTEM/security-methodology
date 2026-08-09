@@ -64,7 +64,7 @@ import webbrowser
 from datetime import datetime, timezone
 
 APP_NAME = "ICS/OT/IoT Threat Modeler"
-APP_VERSION = "3.7.0"
+APP_VERSION = "3.7.1"
 DEFAULT_DB = os.environ.get("ITM_DB", os.path.join(os.path.expanduser("~"), ".ics_threat_modeler.db"))
 
 # =============================================================================
@@ -1114,10 +1114,27 @@ def missing_sections(rep):
     return miss
 
 
+def _is_image_error(exc):
+    """True if a provider error is about an image it couldn't accept, so we can
+    safely retry the same request with the images removed."""
+    m = str(exc).lower()
+    return ("image" in m) and ("could not process" in m or "400" in m or "invalid" in m
+                               or "unsupported" in m or "media type" in m or "decode" in m)
+
+
 def generate_report(provider, model, system, user, images=None, api_key=None, base_url=None, max_tokens=20000):
     """Generate a complete report; if the first pass drops required sections,
-    do one focused retry so the user never receives a half-empty report."""
-    rep = call_model_json(provider, model, system, user, images, api_key, base_url, max_tokens)
+    do one focused retry so the user never receives a half-empty report.
+    If the provider rejects an image, transparently retry without images so the
+    user still gets a full text-based report instead of an error."""
+    try:
+        rep = call_model_json(provider, model, system, user, images, api_key, base_url, max_tokens)
+    except ProviderError as e:
+        if images and _is_image_error(e):
+            rep = call_model_json(provider, model, system, user, None, api_key, base_url, max_tokens)
+            images = None  # don't re-send the bad image on the completeness retry
+        else:
+            raise
     miss = missing_sections(rep)
     if miss:
         aug = user + ("\n\n# CRITICAL COMPLETENESS FIX\nYour previous output OMITTED these REQUIRED sections: "
@@ -1661,27 +1678,142 @@ def _docx_text_stdlib(data):
     return "\n".join(c for c in chunks if c.strip())
 
 
+# Vision-provider image constraints. Anthropic/OpenAI/Gemini accept only these
+# media types, reject CMYK JPEGs, and reject very large images. We validate every
+# image BEFORE sending so one bad picture can't 400 the whole analysis.
+SUPPORTED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_IMAGE_DIM = 8000        # px per side (provider hard limit is ~8000)
+MAX_IMAGE_BYTES = 4_800_000  # ~5 MB provider cap, with headroom
+
+
+def _scan_jpeg(data, start):
+    """Walk JPEG marker segments from `start` (which must point at FF D8).
+    Returns (end_offset, width, height, components) or None if not a valid JPEG.
+    Walking segments (rather than searching for FF D9) avoids truncating a photo
+    at an embedded EXIF thumbnail's end marker, and lets us read the color model."""
+    n = len(data)
+    if start + 2 > n or data[start] != 0xFF or data[start + 1] != 0xD8:
+        return None
+    pos = start + 2
+    w = h = comps = None
+    while pos + 1 < n:
+        if data[pos] != 0xFF:
+            pos += 1
+            continue
+        # skip fill bytes
+        while pos < n and data[pos] == 0xFF:
+            pos += 1
+        if pos >= n:
+            break
+        marker = data[pos]; pos += 1
+        if marker == 0xD9:            # EOI
+            return (pos, w, h, comps)
+        if marker in (0x01,) or 0xD0 <= marker <= 0xD7:  # TEM / RSTn: no payload
+            continue
+        if pos + 2 > n:
+            return None
+        seg_len = (data[pos] << 8) | data[pos + 1]
+        if seg_len < 2 or pos + seg_len > n:
+            return None
+        if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
+                      0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):  # SOF (frame header)
+            if seg_len >= 8:
+                h = (data[pos + 3] << 8) | data[pos + 4]
+                w = (data[pos + 5] << 8) | data[pos + 6]
+                comps = data[pos + 7]
+        if marker == 0xDA:            # SOS: entropy data follows; find EOI
+            pos += seg_len
+            while pos + 1 < n:
+                if data[pos] == 0xFF:
+                    b = data[pos + 1]
+                    if b == 0xD9:
+                        return (pos + 2, w, h, comps)
+                    if b == 0x00 or (0xD0 <= b <= 0xD7):  # stuffed byte / restart
+                        pos += 2; continue
+                pos += 1
+            return (n, w, h, comps)   # ran to EOF without EOI: take what we have
+        pos += seg_len
+    return None
+
+
+def _jpeg_ok(blob):
+    """True if a JPEG blob is safe to send to a vision model (valid, RGB/grayscale
+    — not CMYK — and within dimension/byte limits)."""
+    info = _scan_jpeg(blob, 0)
+    if not info:
+        return False
+    _end, w, h, comps = info
+    if comps == 4:                       # CMYK — providers reject with "Could not process image"
+        return False
+    if w and h and (w > MAX_IMAGE_DIM or h > MAX_IMAGE_DIM):
+        return False
+    if len(blob) > MAX_IMAGE_BYTES:
+        return False
+    return True
+
+
 def _pdf_extract_jpegs(data, cap=MAX_PDF_IMAGES, min_bytes=MIN_PDF_IMAGE_BYTES):
     """Pull embedded JPEG (DCTDecode) images out of a PDF using only the stdlib.
     Handles the common graphics-heavy case (scanned P&IDs/PFDs, product photos).
-    Returns a list of {b64, media_type}. Vector line-art can't be rasterized without
-    a rendering engine — those should be exported as images and uploaded directly."""
+    Every image is validated (valid structure, non-CMYK, size-bounded) so a bad
+    picture can never make the vision request fail. Returns [{b64, media_type}]."""
     out = []
-    i = 0
-    n = len(data)
-    soi = b"\xff\xd8\xff"
+    i, n = 0, len(data)
     while len(out) < cap:
-        s = data.find(soi, i)
+        s = data.find(b"\xff\xd8\xff", i)
         if s == -1:
             break
-        e = data.find(b"\xff\xd9", s + 3)
-        if e == -1:
-            break
-        blob = data[s:e + 2]
-        i = e + 2
-        if len(blob) >= min_bytes:
-            out.append({"b64": base64.b64encode(blob).decode(), "media_type": "image/jpeg"})
+        info = _scan_jpeg(data, s)
+        if not info:
+            i = s + 3
+            continue
+        end, w, h, comps = info
+        blob = data[s:end]
+        i = end
+        if len(blob) < min_bytes:
+            continue
+        if comps == 4:                   # CMYK: skip (unsupported by vision APIs)
+            continue
+        if w and h and (w > MAX_IMAGE_DIM or h > MAX_IMAGE_DIM):
+            continue
+        if len(blob) > MAX_IMAGE_BYTES:
+            continue
+        out.append({"b64": base64.b64encode(blob).decode(), "media_type": "image/jpeg"})
     return out
+
+
+def _png_dims(blob):
+    """Return (w, h) for a PNG, or None."""
+    if len(blob) >= 24 and blob[:8] == b"\x89PNG\r\n\x1a\n" and blob[12:16] == b"IHDR":
+        w = int.from_bytes(blob[16:20], "big"); h = int.from_bytes(blob[20:24], "big")
+        return (w, h)
+    return None
+
+
+def sanitize_images(images):
+    """Keep only images a vision model can actually process. Returns (clean, dropped)
+    where dropped is a count. Validates media type, base64, JPEG color model/size,
+    and PNG dimensions. This is the last line of defense before an API call."""
+    clean, dropped = [], 0
+    for im in images or []:
+        mt = (im.get("media_type") or "").lower()
+        b64 = im.get("b64") or ""
+        if mt not in SUPPORTED_IMAGE_TYPES or not b64:
+            dropped += 1; continue
+        try:
+            raw = base64.b64decode(b64, validate=False)
+        except Exception:  # noqa: BLE001
+            dropped += 1; continue
+        if len(raw) > MAX_IMAGE_BYTES:
+            dropped += 1; continue
+        if mt == "image/jpeg" and not _jpeg_ok(raw):
+            dropped += 1; continue
+        if mt == "image/png":
+            d = _png_dims(raw)
+            if d and (d[0] > MAX_IMAGE_DIM or d[1] > MAX_IMAGE_DIM):
+                dropped += 1; continue
+        clean.append({"b64": b64, "media_type": mt})
+    return clean, dropped
 
 
 def ingest_artifact(filename, b64data):
@@ -1700,6 +1832,9 @@ def ingest_artifact(filename, b64data):
     if ext in IMAGE_EXTS:
         media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif",
                  ".bmp": "image/bmp", ".webp": "image/webp", ".svg": "image/svg+xml"}.get(ext, "image/png")
+        if media not in SUPPORTED_IMAGE_TYPES:
+            warnings.append(f"{ext} images can't be read by vision models — please re-save as PNG or JPG. "
+                            "This file will be skipped for image analysis.")
         return {"filename": filename, "kind": kind if kind != "other" else "image", "is_image": True,
                 "text_excerpt": "", "image_b64": b64data, "media_type": media,
                 "extra_images": [], "text_len": 0, "warnings": warnings}
@@ -3045,6 +3180,11 @@ def run_analysis(payload, progress=None):
             artifact_ctx += ("\n\n[Note: image artifacts (" + ", ".join(img_names) +
                              ") were provided but the selected model is not vision-capable. "
                              "Reason about them from any accompanying text, or the user should pick a vision model.]")
+    # Drop any image a vision model can't process (CMYK/corrupt/oversized/unsupported)
+    # BEFORE calling the API, so one bad picture never fails the whole analysis.
+    images, dropped = sanitize_images(images)
+    if dropped:
+        progress(f"Skipped {dropped} image(s) that a vision model can't read (CMYK, corrupt, or oversized).")
     for nt in notes:
         progress(nt)
 
@@ -3256,6 +3396,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             extra_ctx, imgs, _notes = build_analysis_context(
                 arts, p["provider"], p["model"], p.get("api_key"), p.get("base_url"),
                 bool(prov.get("vision")), lambda _m: None)
+            imgs, _dropped = sanitize_images(imgs)
             images = imgs or None
         user = build_refine_prompt(current, instruction)
         if extra_ctx:
