@@ -48,6 +48,31 @@ and names are ISA/IEC's own; concise summaries are paraphrased for mapping. The
 standard remains the property of ISA/IEC — consult the primary source for
 authoritative text (https://www.isa.org).
 
+v1.1.0 CORRECTIONS (aligned with the hand-authored 62443 SL-3 checklist library rules):
+  * Requirement catalog matches ANSI/ISA-62443-3-3 (2013) / ANSI/ISA-62443-4-2 (2018):
+    51 SRs; 43 base CRs (no CR 1.6, 1.13, 2.3, 2.4, 2.13, 3.2, 3.10-3.14, 5.2, 5.3,
+    5.4, 7.5); EDR 8 (adds EDR 2.4), HDR 8 (adds HDR 2.13), NDR 12 (adds NDR 2.13),
+    SAR 2. One row per requirement number, labelled only with references that exist
+    (SR/CR 1.1, SR 2.3, SR/EDR 2.4, CR 1.14, EDR 3.11, SR/NDR 5.2 ...): 58 rows for an
+    EDR/HDR/NDR sheet, 52 for a SAR sheet.
+  * No merged requirements: model rows are split, relabelled, re-filed under the right
+    FR and de-duplicated; merged-away requirements are backfilled as their own rows.
+  * Prompts carry the depth standard (V&V evidence clause; Pass / Fail / Partial / N/A /
+    Deferred; Partial + compensating + residual risk), read-only default and operational
+    safety limits, CLI accuracy rules, ground-or-flag, identity check, EDR-vs-HDR rule,
+    and a product-specific "Session setup & evidence capture" preamble row.
+  * Footer wording "Independent Assurance Services" (never "... Authority").
+  * PDF: FR headings kept with their table header and first row; reportlab/HTML markup
+    and entities (&lt;ip&gt;, I&amp;A, <b>, <br/>) cleaned before rendering.
+  * Built-in QA audit shown with every result; saved v1.0 sheets are corrected when
+    opened or exported.
+
+v1.1.1 (2 Oct 2026): provider model lists refreshed to the providers' current API model IDs
+  (retired IDs such as deepseek-chat / deepseek-reasoner and moonshot-v1-* removed); ReadOnlyEnum
+  described as Isiah Jones's read-only enumeration and configuration audit tool; Kimi provider
+  marked vision-capable (kimi-k3 and kimi-k2.6 accept images); ReadOnlyEnum v3 usage corrected to
+  its interactive console (no --target flag exists; only --no-color).
+
 License: MIT.  Created by Isiah Jones.
 ================================================================================
 """
@@ -76,7 +101,7 @@ import zlib
 from datetime import datetime, timezone
 
 APP_NAME = "ICS/OT/IoT 62443 SL-3 Checklist Generator"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.1"
 DEFAULT_DB = os.environ.get("ICG_DB", os.path.join(os.path.expanduser("~"), ".ics_62443_checklists.db"))
 
 # =============================================================================
@@ -157,24 +182,24 @@ IEC62443 = {
         ("SR 7.7", "FR7", "Least functionality", "Restrict to least functionality (disable unused ports/services)."),
         ("SR 7.8", "FR7", "Control system component inventory", "Maintain a component inventory."),
     ],
+    # v1.1.0: only the base CRs that exist in ISA/IEC 62443-4-2 are listed. There is NO base CR at
+    # 1.6, 1.13, 2.3, 2.4, 2.13, 3.2, 3.10-3.14, 5.2, 5.3, 5.4 or 7.5 (2.3, 5.4 and 7.5 have no
+    # component-level requirement at all; the others exist only as EDR/HDR/NDR/SAR requirements).
     "part_4_2_cr": [  # IEC 62443-4-2 baseline component requirements (CR)
         ("CR 1.1", "FR1", "Human user identification and authentication", "Component identifies/authenticates human users on all interfaces."),
         ("CR 1.2", "FR1", "Software process and device identification and authentication", "Component identifies/authenticates processes/devices; applies to all interfaces incl. debug."),
         ("CR 1.3", "FR1", "Account management", "Support account management for the component."),
         ("CR 1.4", "FR1", "Identifier management", "Support identifier management."),
         ("CR 1.5", "FR1", "Authenticator management", "No hardcoded/default credentials; secure authenticator lifecycle."),
-        ("CR 1.6", "FR1", "Wireless access management", "Authenticate/authorize wireless access."),
         ("CR 1.7", "FR1", "Strength of password-based authentication", "Enforce configurable password strength."),
         ("CR 1.8", "FR1", "Public key infrastructure certificates", "Support certificate-based authentication where used."),
-        ("CR 1.9", "FR1", "Strength of public key authentication", "Validate certificates; protect private keys (hardware-backed)."),
+        ("CR 1.9", "FR1", "Strength of public key-based authentication", "Validate certificates; protect private keys (hardware-backed)."),
         ("CR 1.10", "FR1", "Authenticator feedback", "Obscure authenticator feedback."),
         ("CR 1.11", "FR1", "Unsuccessful login attempts", "Limit/lockout after failed logins."),
         ("CR 1.12", "FR1", "System use notification", "Support system-use notification/banner."),
-        ("CR 1.14", "FR1", "Strength of symmetric key authentication", "Protect and validate symmetric keys used for authentication."),
+        ("CR 1.14", "FR1", "Strength of symmetric key-based authentication", "Protect and validate symmetric keys used for authentication."),
         ("CR 2.1", "FR2", "Authorization enforcement", "Enforce least-privilege RBAC on all functions."),
         ("CR 2.2", "FR2", "Wireless use control", "Enforce wireless usage restrictions."),
-        ("CR 2.3", "FR2", "Use control for portable and mobile devices", "Support usage control for portable/mobile devices."),
-        ("CR 2.4", "FR2", "Mobile code", "Control mobile code execution."),
         ("CR 2.5", "FR2", "Session lock", "Support session lock/timeout."),
         ("CR 2.6", "FR2", "Remote session termination", "Terminate remote sessions."),
         ("CR 2.7", "FR2", "Concurrent session control", "Limit concurrent sessions."),
@@ -184,7 +209,6 @@ IEC62443 = {
         ("CR 2.11", "FR2", "Timestamps", "Provide reliable, protected timestamps."),
         ("CR 2.12", "FR2", "Non-repudiation", "Support non-repudiation for critical actions."),
         ("CR 3.1", "FR3", "Communication integrity", "Protect integrity of communications."),
-        ("CR 3.2", "FR3", "Protection from malicious code", "Support mechanisms to prevent/limit malicious code and memory corruption."),
         ("CR 3.3", "FR3", "Security functionality verification", "Support verification of security functions."),
         ("CR 3.4", "FR3", "Software and information integrity", "Verify integrity/authenticity of firmware/software/information (secure boot, signing)."),
         ("CR 3.5", "FR3", "Input validation", "Validate inputs to interfaces/protocols."),
@@ -192,17 +216,10 @@ IEC62443 = {
         ("CR 3.7", "FR3", "Error handling", "Handle errors without leaking sensitive information."),
         ("CR 3.8", "FR3", "Session integrity", "Protect session integrity."),
         ("CR 3.9", "FR3", "Protection of audit information", "Protect audit information from tampering."),
-        ("CR 3.10", "FR3", "Support for updates", "Support authenticated, integrity-verified updates."),
-        ("CR 3.11", "FR3", "Physical tamper resistance and detection", "Support tamper resistance/detection."),
-        ("CR 3.12", "FR3", "Provisioning product supplier roots of trust", "Support supplier-provisioned roots of trust."),
-        ("CR 3.13", "FR3", "Provisioning asset owner roots of trust", "Support owner-provisioned roots of trust."),
-        ("CR 3.14", "FR3", "Integrity of the boot process", "Verify integrity/authenticity of the boot process (secure boot)."),
         ("CR 4.1", "FR4", "Information confidentiality", "Protect confidentiality of data at rest/in transit; protect secrets."),
         ("CR 4.2", "FR4", "Information persistence", "Erase sensitive data when no longer needed / on decommission."),
         ("CR 4.3", "FR4", "Use of cryptography", "Use validated cryptography with proper key management."),
         ("CR 5.1", "FR5", "Network segmentation", "Support network segmentation for the component."),
-        ("CR 5.2", "FR5", "Zone boundary protection", "Support boundary protection features (deny by default)."),
-        ("CR 5.3", "FR5", "General purpose person-to-person communication restrictions", "Restrict general-purpose comms."),
         ("CR 6.1", "FR6", "Audit log accessibility", "Provide access to audit logs."),
         ("CR 6.2", "FR6", "Continuous monitoring", "Support continuous security monitoring/alerting."),
         ("CR 7.1", "FR7", "Denial of service protection", "Maintain essential functions under DoS."),
@@ -215,6 +232,7 @@ IEC62443 = {
     ],
     # Component-type-specific requirements, keyed by code.
     "EDR": [
+        ("EDR 2.4", "FR2", "Mobile code", "Control mobile code on the embedded device; verify authenticity before execution."),
         ("EDR 2.13", "FR2", "Use of physical diagnostic and test interfaces", "Protect physical debug/test interfaces (JTAG/UART)."),
         ("EDR 3.2", "FR3", "Protection from malicious code", "Memory-corruption and code-injection protections."),
         ("EDR 3.10", "FR3", "Support for updates", "Authenticated, verified firmware update."),
@@ -225,6 +243,7 @@ IEC62443 = {
     ],
     "HDR": [
         ("HDR 2.4", "FR2", "Mobile code", "Control mobile code on host devices."),
+        ("HDR 2.13", "FR2", "Use of physical diagnostic and test interfaces", "Protect physical diagnostic/test interfaces on the host."),
         ("HDR 3.2", "FR3", "Protection from malicious code", "Anti-malware/allowlisting support."),
         ("HDR 3.10", "FR3", "Support for updates", "Authenticated, verified updates."),
         ("HDR 3.11", "FR3", "Physical tamper resistance and detection", "Tamper resistance/detection."),
@@ -236,6 +255,7 @@ IEC62443 = {
         ("NDR 1.6", "FR1", "Wireless access management", "Manage wireless access."),
         ("NDR 1.13", "FR1", "Access via untrusted networks", "Control access from untrusted networks."),
         ("NDR 2.4", "FR2", "Mobile code", "Control mobile code."),
+        ("NDR 2.13", "FR2", "Use of physical diagnostic and test interfaces", "Protect physical diagnostic/test interfaces (console/debug)."),
         ("NDR 3.2", "FR3", "Protection from malicious code", "Malicious code protections."),
         ("NDR 3.10", "FR3", "Support for updates", "Authenticated, verified updates."),
         ("NDR 3.11", "FR3", "Physical tamper resistance and detection", "Tamper resistance/detection."),
@@ -243,7 +263,7 @@ IEC62443 = {
         ("NDR 3.13", "FR3", "Provisioning asset owner roots of trust", "Owner roots of trust."),
         ("NDR 3.14", "FR3", "Integrity of the boot process", "Secure/verified boot."),
         ("NDR 5.2", "FR5", "Zone boundary protection", "Enforce boundary protection / deny by default."),
-        ("NDR 5.3", "FR5", "General purpose person-to-person communication restrictions", "Restrict general-purpose comms."),
+        ("NDR 5.3", "FR5", "General purpose, person-to-person communication restrictions", "Restrict general-purpose comms."),
     ],
     "SAR": [
         ("SAR 2.4", "FR2", "Mobile code", "Control mobile code in the application."),
@@ -252,40 +272,61 @@ IEC62443 = {
 }
 
 
-def requirements_for(codes):
-    """Return the ordered requirement catalog (SR + CR + component-specific rows)
-    that a cheat sheet for the given component-type codes must cover. Each item is
-    (req_id_label, fr, name, summary) where req_id_label collapses matching SR+CR
-    into the sheet's 'SR/CR x.y' style when the numbers align."""
-    codes = [c for c in (codes or []) if c in COMPONENT_TYPES]
-    sr = {i: (i, fr, n, s) for i, fr, n, s in IEC62443["part_3_3"]}
-    cr = {i: (i, fr, n, s) for i, fr, n, s in IEC62443["part_4_2_cr"]}
-    rows = []
-    seen = set()
-    # Pair SR x.y with CR x.y -> "SR/CR x.y"; otherwise emit individually.
-    def num(i):
-        return i.split(" ", 1)[1]
-    sr_nums = {num(i): v for i, v in sr.items()}
-    cr_nums = {num(i): v for i, v in cr.items()}
-    all_nums = sorted(set(sr_nums) | set(cr_nums), key=lambda x: [int(p) for p in x.split(".")])
-    for nmbr in all_nums:
-        in_sr = nmbr in sr_nums
-        in_cr = nmbr in cr_nums
-        base = sr_nums.get(nmbr) or cr_nums.get(nmbr)
-        _, fr, name, summ = base
-        if in_sr and in_cr:
-            label = f"SR/CR {nmbr}"
-        elif in_sr:
-            label = f"SR {nmbr}"
-        else:
-            label = f"CR {nmbr}"
-        rows.append((label, fr, name, summ))
-        seen.add(label)
-    # Append component-type-specific requirement rows (EDR/HDR/NDR/SAR).
+def _num_key(n):
+    return [int(p) for p in n.split(".")]
+
+
+def _req_num(req_id):
+    return req_id.split(" ", 1)[1]
+
+
+# System requirements with no component-level counterpart in 62443-4-2 (4-2 6.5, 9.6, 11.7),
+# and SRs whose only 4-2 counterpart is a network-device requirement (NDR 1.6, 1.13, 5.2, 5.3).
+_SR_ONLY_NOTE = ("(System-level SR: ISA/IEC 62443-4-2 has no component-level requirement here. Assess what the "
+                 "component contributes to the system requirement, or record N/A at the component with a justification.)")
+_SR_NDR_NOTE = ("(System-level SR: in ISA/IEC 62443-4-2 the component-level requirement exists only for network "
+                "devices (NDR {n}). Assess what this component contributes, or record N/A at the component with a "
+                "justification.)")
+
+
+def requirement_index(codes):
+    """v1.1.0 canonical requirement map for the confirmed component type(s).
+    Returns {number: (label, fr, name, summary)} with ONE entry per requirement number.
+    The label names only the references that exist in ISA/IEC 62443-3-3 / 4-2 for that
+    number and the selected type(s) — e.g. 'SR/CR 1.1', 'SR 2.3', 'SR/EDR 2.4',
+    'SR/SAR 3.2', 'CR 1.14', 'EDR 3.11', 'SR/NDR 5.2', 'NDR 3.10' (same rule as the
+    checklist library's req_norm.py)."""
+    codes = [c for c in COMPONENT_TYPES if c in (codes or [])] or ["EDR"]
+    sr = {_req_num(i): (fr, n, s) for i, fr, n, s in IEC62443["part_3_3"]}
+    cr = {_req_num(i): (fr, n, s) for i, fr, n, s in IEC62443["part_4_2_cr"]}
+    dev = {c: {_req_num(i): (fr, n, s) for i, fr, n, s in IEC62443.get(c, [])} for c in codes}
+    nums = set(sr) | set(cr)
     for c in codes:
-        for i, fr, n, s in IEC62443.get(c, []):
-            rows.append((i, fr, n, s))
-    return rows
+        nums |= set(dev[c])
+    out = {}
+    for n in sorted(nums, key=_num_key):
+        parts = []
+        if n in sr:
+            parts.append("SR")
+        if n in cr:
+            parts.append("CR")
+        dev_hits = [c for c in codes if n in dev[c]]
+        parts += dev_hits
+        # Title/summary: 4-2 wording where a component requirement exists, else the 3-3 SR.
+        src = cr.get(n) or (dev[dev_hits[0]][n] if dev_hits else None) or sr[n]
+        fr, name, summ = src
+        if n in sr and n not in cr and not dev_hits:
+            ndr_only = n in {_req_num(i) for i, *_ in IEC62443["NDR"]}
+            summ = summ + " " + (_SR_NDR_NOTE.format(n=n) if ndr_only else _SR_ONLY_NOTE)
+        out[n] = ("/".join(parts) + " " + n, fr, name, summ)
+    return out
+
+
+def requirements_for(codes):
+    """Return the ordered requirement catalog that a cheat sheet for the given
+    component-type codes must cover: ONE row per requirement number, each item
+    (req_id_label, fr, name, summary), labelled per requirement_index()."""
+    return list(requirement_index(codes).values())
 
 
 def rows_by_fr(codes):
@@ -294,6 +335,111 @@ def rows_by_fr(codes):
     for label, fr, name, summ in cat:
         out.setdefault(fr, []).append((label, name, summ))
     return out
+
+
+# ---- v1.1.0 requirement normalizer (mirrors the checklist library's req_norm.normalize) ----
+_NUM_RE = re.compile(r"(?<![\d.])(\d{1,2}\.\d{1,2})(?![\d.])")
+NOT_GENERATED = "(not generated — use Refine to regenerate this requirement)"
+SHARED_STUB = ("Assessed with the same evidence as **{p}** above (shared steps) — confirm this requirement "
+               "individually and adjudicate it separately. Use Refine to author product-specific steps for it.")
+
+
+def row_numbers(req_id):
+    """Ordered, de-duplicated requirement numbers that appear in a req_id string."""
+    out = []
+    for n in _NUM_RE.findall(req_id or ""):
+        if n not in out:
+            out.append(n)
+    return out
+
+
+def normalize_requirement_rows(frs, codes, log=None):
+    """Return a fresh FR list in which (1) every multi-number row is split so each
+    requirement is its own row (no merging, ever), (2) every row is relabelled with
+    only the references that exist for the confirmed component type(s), (3) every row
+    sits under its correct Foundational Requirement in number order, (4) duplicates
+    and rows with no valid requirement number are removed, and (5) any required
+    requirement that is still missing is shown as a visible 'not generated' row.
+    Messages describing each change are appended to `log` when given."""
+    log = log if log is not None else []
+    idx = requirement_index(codes)
+    primary, merged_extra, dropped, relabel, dups = {}, [], [], 0, 0
+    # Pass 1: the first row whose PRIMARY (first valid) number is n keeps its authored steps.
+    for fr in (frs or []):
+        for row in (fr.get("rows") or []):
+            if not isinstance(row, dict):
+                continue
+            nums = [n for n in row_numbers(row.get("req_id", "")) if n in idx]
+            if not nums:
+                dropped.append(row.get("req_id", "") or "(blank)")
+                continue
+            p = nums[0]
+            if p in primary:
+                dups += 1                              # duplicate row for the same requirement
+                continue
+            label, _fr, name, _s = idx[p]
+            if (row.get("req_id", "") or "").strip() != label:
+                relabel += 1
+            new = dict(row)
+            new["req_id"], new["requirement"] = label, name
+            primary[p] = new
+            if len(nums) > 1:
+                merged_extra.append((p, nums[1:]))
+    # Pass 2: numbers that only appeared as the SECOND number of a merged row get their own row.
+    split = 0
+    for p, extra in merged_extra:
+        for n in extra:
+            if n in primary:
+                continue
+            label, _fr, name, _s = idx[n]
+            primary[n] = {"req_id": label, "requirement": name,
+                          "verify": SHARED_STUB.format(p=idx[p][0]),
+                          "pass": f"{name} verified individually (shared evidence with {idx[p][0]}).",
+                          "notes": "Shared evidence — split from a merged row."}
+            split += 1
+    # Pass 3: any required number still missing stays visible.
+    missing = [n for n in idx if n not in primary]
+    for n in missing:
+        label, _fr, name, _s = idx[n]
+        primary[n] = {"req_id": label, "requirement": name, "verify": NOT_GENERATED,
+                      "pass": "", "notes": "regenerate"}
+    out = []
+    for f in FR_ORDER:
+        rows = [primary[n] for n in sorted(primary, key=_num_key) if idx[n][1] == f]
+        if rows:
+            out.append({"fr": f"{f[:2]} {f[2:]}", "title": FR_TITLES[f], "rows": rows})
+    if relabel:
+        log.append(f"relabelled {relabel} row(s) to the canonical 62443 labels")
+    if split:
+        log.append(f"split {split} merged requirement(s) into their own rows (shared-evidence stubs)")
+    if dups:
+        log.append(f"removed {dups} duplicate row(s) for requirements already covered")
+    if dropped:
+        log.append(f"removed {len(dropped)} row(s) with no valid requirement for this type: "
+                   + ", ".join(dropped[:6]) + (" …" if len(dropped) > 6 else ""))
+    if missing:
+        log.append(f"{len(missing)} requirement(s) not generated: "
+                   + ", ".join(idx[n][0] for n in missing[:8]) + (" …" if len(missing) > 8 else ""))
+    return out
+
+
+_TAG_RE = re.compile(r"</?(?:b|strong|i|em|u|code|font|span|para|super|sub)(?:\s[^<>]*)?/?>", re.I)
+
+
+def clean_cell_text(s):
+    """v1.1.0: undo markup some models copy from reportlab/HTML sources so the PDF and HTML
+    show what was meant: <br/> -> newline, <b>/<strong> -> **bold**, other known formatting
+    tags dropped, and &lt; &gt; &amp; &quot; &#39; &nbsp; decoded (so '&lt;ip&gt;' prints as
+    '<ip>' and 'I&amp;A' as 'I&A'). Placeholders such as <ip>, <host>, <file> are kept."""
+    if not isinstance(s, str) or not s:
+        return s
+    t = re.sub(r"<br\s*/?>", "\n", s, flags=re.I)
+    t = re.sub(r"<(?:b|strong)(?:\s[^<>]*)?>(.*?)</(?:b|strong)>", r"**\1**", t, flags=re.I | re.S)
+    t = _TAG_RE.sub("", t)
+    for ent, ch in (("&lt;", "<"), ("&gt;", ">"), ("&quot;", '"'), ("&#39;", "'"), ("&nbsp;", " "),
+                    ("&amp;", "&")):
+        t = t.replace(ent, ch)
+    return t
 
 
 def catalog_stats():
@@ -313,36 +459,34 @@ PROVIDERS = {
         "label": "Anthropic (Claude)", "kind": "anthropic",
         "base_url": "https://api.anthropic.com/v1",
         "env": "ANTHROPIC_API_KEY", "vision": True,
-        "models": [["claude-opus-4-8", "Claude Opus 4.8"], ["claude-sonnet-4-6", "Claude Sonnet 4.6"],
-                   ["claude-haiku-4-5", "Claude Haiku 4.5"], ["claude-opus-4-1-20250805", "Claude Opus 4.1"]],
+        "models": [["claude-opus-5-5", "Claude Opus 5.5"], ["claude-sonnet-5-5", "Claude Sonnet 5.5"],
+                   ["claude-haiku-4-5-20251001", "Claude Haiku 4.5"], ["claude-fable-5-1", "Claude Fable 5.1"]],
         "notes": "Get a key at https://console.anthropic.com/",
     },
     "openai": {
         "label": "OpenAI", "kind": "openai", "base_url": "https://api.openai.com/v1",
         "env": "OPENAI_API_KEY", "vision": True,
-        "models": [["gpt-5.2", "GPT-5.2"], ["gpt-5", "GPT-5"], ["gpt-4.1", "GPT-4.1"],
-                   ["gpt-4o", "GPT-4o"], ["o3", "OpenAI o3"]],
+        "models": [["gpt-6-astra", "GPT-6 Astra"], ["gpt-6.1-sol", "GPT-6.1 Sol"], ["gpt-6-luna", "GPT-6 Luna"]],
         "notes": "Get a key at https://platform.openai.com/",
     },
     "google": {
         "label": "Google Gemini", "kind": "google",
         "base_url": "https://generativelanguage.googleapis.com/v1beta",
         "env": "GOOGLE_API_KEY", "vision": True,
-        "models": [["gemini-3-pro-preview", "Gemini 3 Pro"], ["gemini-2.5-pro", "Gemini 2.5 Pro"],
-                   ["gemini-2.5-flash", "Gemini 2.5 Flash"]],
+        "models": [["gemini-3.8-flash", "Gemini 3.8 Flash"], ["gemini-3.1-pro-preview", "Gemini 3.1 Pro (preview)"],
+                   ["gemini-3.5-flash-lite", "Gemini 3.5 Flash-Lite"]],
         "notes": "Get a key at https://aistudio.google.com/",
     },
     "deepseek": {
         "label": "DeepSeek", "kind": "openai", "base_url": "https://api.deepseek.com/v1",
         "env": "DEEPSEEK_API_KEY", "vision": False,
-        "models": [["deepseek-chat", "DeepSeek Chat (V3)"], ["deepseek-reasoner", "DeepSeek Reasoner (R1)"]],
+        "models": [["deepseek-v4-pro", "DeepSeek V4 Pro"], ["deepseek-flash", "DeepSeek Flash (V4.1)"]],
         "notes": "OpenAI-compatible. Get a key at https://platform.deepseek.com/",
     },
     "moonshot": {
         "label": "Kimi (Moonshot)", "kind": "openai", "base_url": "https://api.moonshot.ai/v1",
-        "env": "MOONSHOT_API_KEY", "vision": False,
-        "models": [["kimi-k2-0711-preview", "Kimi K2"], ["moonshot-v1-128k", "Moonshot v1 128k"],
-                   ["moonshot-v1-32k", "Moonshot v1 32k"]],
+        "env": "MOONSHOT_API_KEY", "vision": True,
+        "models": [["kimi-k3", "Kimi K3"], ["kimi-k2.6", "Kimi K2.6"]],
         "notes": "OpenAI-compatible. Intl base https://api.moonshot.ai/v1 ; CN https://api.moonshot.cn/v1",
     },
     "local": {
@@ -1291,7 +1435,16 @@ CLASSIFY_SYSTEM = (
     "NDR = Network Device (switch, router, firewall, gateway, wireless AP, protocol converter); "
     "SAR = Software Application (software installed on a host: SCADA/HMI, historian, OPC server, engineering tool). "
     "A product can map to MORE THAN ONE type (e.g. a gateway that is both EDR and NDR). Base the determination "
-    "on the product's actual nature and the evidence provided; never invent facts — mark unknowns as assumptions."
+    "on the product's actual nature and the evidence provided; never invent facts — mark unknowns as assumptions.\n"
+    "VERIFY THE IDENTITY FIRST: confirm the product is real and correctly identified. If the description names the "
+    "wrong vendor or model (an OEM / rebranded / resold product, a legacy name, an unmanaged vs managed variant), say "
+    "so explicitly in 'reasoning' and give the correct identity in 'product' and 'vendor'.\n"
+    "EDR vs HDR FOR DEVICES WITH A SCREEN (ANSI/ISA-62443-4-2 3.1.19 embedded device / 3.1.24 host device): an "
+    "embedded device is special-purpose, runs an embedded OS or firmware equivalent and may have an attached control "
+    "panel; a host device runs a general-purpose OS (e.g. Windows, Linux) able to host applications from one or more "
+    "suppliers. A vendor-locked touch HMI that runs only the vendor application and takes only vendor packages stays "
+    "part of the EDR — record a reclassify trigger in 'assumptions' (desktop, shell, third-party app install or extra "
+    "network services seen on site -> add an HDR sheet for that part)."
 )
 
 SCHEMA_CLASSIFY = {
@@ -1337,7 +1490,7 @@ def build_classify_prompt(target, scope, artifact_ctx, web_ctx):
 
 # ---- Phase 2: full SL-3 cheat sheet generation ----
 CHECKLIST_SYSTEM = (
-    "You are an independent ICS/OT assessment authority producing a product-specific ISA/IEC 62443-3-3 / 4-2 "
+    "You are an independent ICS/OT security assurance assessor producing a product-specific ISA/IEC 62443-3-3 / 4-2 "
     "SL-3 TESTING CHEAT SHEET. Your output is a dense, practical, bench-usable field checklist. For EVERY "
     "foundational requirement (FR1–FR7), every applicable system requirement (SR) and component requirement (CR), "
     "and the component-type-specific requirements (EDR/HDR/NDR/SAR), you give (a) DETAILED step-by-step NATIVE "
@@ -1354,7 +1507,8 @@ CHECKLIST_SYSTEM = (
     "Modbus, opcua/open62541 for OPC UA, libiec61850/GOOSE tools for IEC 61850, dnp3 tools for DNP3); lockout/"
     "brute-force -> Hydra/Medusa in an ISOLATED lab; fuzzing/input-validation -> boofuzz/Defensics/aegis (isolated); "
     "config/hardening baselines -> CIS-CAT/OpenSCAP/Lynis/Microsoft SCT; passive OT monitoring/inventory -> Claroty/"
-    "Nozomi/Dragos/Forescout/Tenable.ot; read-only host/interface enumeration -> the asset owner's ReadOnlyEnum.py. "
+    "Nozomi/Dragos/Forescout/Tenable.ot; read-only host/interface enumeration -> ReadOnlyEnum.py (Isiah Jones's "
+    "native-Python read-only enumeration and configuration audit tool). "
     "The embedded TOOL PALETTE in the prompt is a SEED, not a limit — you are EXPECTED to add other appropriate open-"
     "source/commercial/vendor tools, INCLUDING ones you find by researching this product's documentation and the web. "
     "For every external tool you name, give the actual command/flags or the click-path to run it.\n\n"
@@ -1370,17 +1524,56 @@ CHECKLIST_SYSTEM = (
     "• 'notes' = product/firmware/version caveat, or 'Compensating', 'Partial + compensating', 'EDR-specific', etc.\n"
     "• Where the product cannot meet a control itself, give the compensating control step-by-step (enforce at host/"
     "EWS, network segmentation, upstream IdP/AD) and mark it Partial/Compensating — never merely 'not supported'.\n"
-    "• Non-applicable requirements (e.g. Wireless 1.6/2.2 on a wired-only device; person-to-person 5.3; application "
+    "• Non-applicable requirements (e.g. Wireless 1.6 and 2.2 on a wired-only device; person-to-person 5.3; application "
     "partitioning 5.4 on a single-purpose device; emergency power 7.5 at facility level): verify = one-line "
     "justification, pass = 'N/A - justification recorded (not assessed as a control)', notes = 'N/A'.\n"
-    "• Req id labels: 'SR/CR x.y' when both apply; else 'SR x.y' / 'CR x.y'; component rows 'EDR/HDR/NDR/SAR x.y'; "
-    "an augmenting component row may read e.g. 'SR/CR 1.13 (+ NDR 1.13)'.\n"
+    "• Req id labels: copy each req_id EXACTLY as given in the requirement coverage list (see REQUIREMENT LABELS).\n"
     "• Ground EVERYTHING in the real product (real tool names — Studio 5000, DIGSI 5, EcoStruxure, TIA Portal, SEL "
     "AcSELerator, Gateway web UI — real ports, protocols, firmware requirements). Never fabricate a datasheet fact; "
     "state assumptions explicitly in notes.\n\n"
+    "REQUIREMENT LABELS — MUST BE 100% CORRECT (ISA/IEC 62443-3-3 and 62443-4-2). A row is labelled only with the "
+    "references that exist for the confirmed component type, e.g. 'SR/CR 1.1', 'SR 2.3', 'SR/EDR 2.4', 'SR/SAR 3.2', "
+    "'CR 1.14', 'EDR 3.11', 'SR/NDR 5.2', 'NDR 3.10'. There is no SR 1.14. There is no base CR at 1.6, 1.13, 2.3, 2.4, "
+    "2.13, 3.2, 3.10-3.14, 5.2, 5.3, 5.4 or 7.5 (SR 2.3, SR 5.4 and SR 7.5 have no component-level requirement at all). "
+    "Never invent a device prefix (no 'NDR 1.1', no 'SAR 3.5', no 'CR 2.4').\n"
+    "NO MERGING, EVER. Every requirement is its own row with its own detailed steps — never '1.5 / 1.7', '6.1 / 6.2', "
+    "'3.4 (+ HDR 3.14)' or anything spanning FRs. If the evidence really is shared, write both rows and say in each "
+    "that the evidence is shared. Avoid slash pairs of requirement numbers even in prose (write 'SR/CR 3.3 and SR/CR "
+    "7.8').\n\n"
+    "DEPTH AND ADJUDICATION — every row needs: exact native navigation (real menu paths / screens); command-level "
+    "external-tool steps (actual commands, flags, ports); an inline '**Test:**' where a behavior can be demonstrated "
+    "(on live systems by exception only); a '**V&V evidence:**' clause naming the screenshot, export, log or photo "
+    "that proves the row; and pass criteria an assessor can adjudicate as **Pass / Fail / Partial / N/A / Deferred** "
+    "from that evidence. Where the product cannot meet a control natively: **Partial + compensating control + residual "
+    "risk**. Where the needed access is genuinely out of scope: **N/A / Deferred + compensating**.\n\n"
+    "READ-ONLY BY DEFAULT AND OPERATIONAL SAFETY. Guidance for live / production systems uses only native read-only "
+    "views, show/get/read commands, uploads/exports and photos. Write, exploit, fuzz, DoS/load, brute-force and active "
+    "scanning steps run only in an isolated or representative environment with written authorization — label them "
+    "'ISOLATED / by exception'. State controller don'ts where they apply (no mode/keyswitch change, download, online "
+    "edit, forcing, reset, or firmware flash outside a maintenance window; never a vendor action that resets the "
+    "device). Repeat the vendor's hazardous-location warning in steps that connect or disconnect USB, SD, Ethernet or "
+    "modules. Functional-safety systems (SIS, safety controllers, protection relays): record the safety signature and "
+    "lock state, never suggest unlocking or re-signing, and treat bypass, battle short / override, maintenance modes "
+    "and forces as safety-significant findings.\n\n"
+    "CLI COMMAND ACCURACY — engineers run these step by step, so every command must work on THAT model, OS family and "
+    "version. One command per line; never slash-merge two commands ('show processes cpu sorted' and 'show processes "
+    "memory sorted' are two commands, not 'show processes cpu/memory sorted'). Verify with show/get/read commands, "
+    "never configuration commands (e.g. Cisco password strength is verified with 'show running-config | include "
+    "security passwords', not 'security passwords min-length 14'). Use the exact verbs of that OS family (IOS vs "
+    "IOS-XE, Junos EX switch vs SRX firewall, HiOS, FortiOS, vendor-specific CLIs) and tell the tester to confirm the "
+    "family/version with the version command first. No unfinished placeholders such as '...'. Never use commands that "
+    "do not exist (e.g. 'show local user accounts', 'show file integrity', 'show crypto policy', 'show log config "
+    "all', 'show privilege level', 'show encryption status'). Write placeholders as <ip>, <host>, <file>.\n\n"
+    "GROUND IT OR FLAG IT. Every menu path, command, default value and file format comes from the vendor documentation "
+    "and research provided. If something cannot be verified, write 'confirm against <document>' or 'not verified' "
+    "instead of guessing. Report certifications exactly as issued (e.g. 'IEC 62443-4-2 SL 1 certified at FW 38+', not "
+    "'62443 compliant') with any conditions that void them. Give advisory / CVE status with an as-of date and tell "
+    "testers to re-check at assessment time. MITRE ATT&CK for ICS references always give the technique ID and full "
+    "name together (e.g. 'T0831 Manipulation of Control'); write 'MITRE EMB3D' with the prefix; ICS architecture "
+    "levels as plain L0-L5.\n\n"
     "EXTERNAL TEST TOOLS TABLE. Build it from the tools you actually used across the rows: for each, give what it "
     "verifies (with the requirement numbers), step-by-step how-to (real commands/flags/click-paths), and its "
-    "constraints (e.g. 'ISOLATED/lab only', 'passive SPAN/tap', 'read-only', 'authorized maintenance window'). "
+    "constraints (e.g. 'ISOLATED / by exception', 'passive SPAN/tap', 'read-only', 'authorized maintenance window'). "
     "Include the vendor-native tools, the open-source and commercial tools you chose, and ReadOnlyEnum.py when host/"
     "interface enumeration applies. Add any product-specific tools you identified from the documentation or research."
 )
@@ -1394,15 +1587,15 @@ preamble:
   - Interfaces / ports: "EtherNet/IP explicit TCP 44818; CIP class-1 I/O UDP 2222; CIP Security 2221 (DTLS); embedded web 80/443; SNMP 161."
   - Firmware note: "CIP Security requires controller firmware v31/32+, Studio 5000 v32+, FactoryTalk System Services (CA) + Policy Manager."
   - How to read: "Default read-only. Each row = native how-to + external-tool validation + pass criteria. Write/exploit tools = isolated/representative env + written authorization."
-row SR/CR 1.1 (Human user I&A): verify="In **Studio 5000 › Controller Properties › Security** set **Security Authority** to the FactoryTalk Security server (with **SNN**, 'bind to authority') and require authentication; assign **Permission Sets** so only authorized FT users can go online/download/edit. In **FactoryTalk Administration Console** confirm named/Windows-linked accounts (no shared). **Test:** attempt online/download as an unauthorized FT user -> denied. **Ext. tools:** FactoryTalk Admin Console (user/policy review); RSLinx/FactoryTalk Linx **Who Active** (enumerate access paths); **ReadOnlyEnum.py** (confirm no anonymous CIP)." pass="All engineering access requires FT authentication; unauthorized users denied; no anonymous CIP path." notes="Needs FactoryTalk Security bound. Controller-local only = **Partial + compensating** (segmentation + CIP Security)."
+row SR/CR 1.1 (Human user I&A): verify="In **Studio 5000 › Controller Properties › Security** set **Security Authority** to the FactoryTalk Security server (with **SNN**, 'bind to authority') and require authentication; assign **Permission Sets** so only authorized FT users can go online/download/edit. In **FactoryTalk Administration Console** confirm named/Windows-linked accounts (no shared). **Test:** attempt online/download as an unauthorized FT user -> denied. **Ext. tools:** FactoryTalk Admin Console (user/policy review); RSLinx/FactoryTalk Linx **Who Active** (enumerate access paths); **ReadOnlyEnum.py** (confirm no anonymous CIP). **V&V evidence:** screenshot of Controller Properties › Security and the FactoryTalk Administration Console user list." pass="All engineering access requires FT authentication; unauthorized users denied; no anonymous CIP path." notes="Needs FactoryTalk Security bound. Controller-local only = **Partial + compensating** (segmentation + CIP Security)."
 row SR/CR 1.9 (Strength of public key auth): verify="In **FactoryTalk Policy Manager** confirm the CIP Security device cert uses strong keys (**ECC / RSA>=2048**) and is in-date. **Ext. tools:** **openssl** ('openssl s_client -connect <plc>:2221 -dtls1_2 | openssl x509 -noout -dates -issuer') or **testssl.sh** to confirm suite/expiry; **sslyze --certinfo <plc>:2221**." pass="Strong certificate crypto; weak/expired certs absent (openssl/testssl output attached)." notes="**FW v32+** / CIP Security."
-row SR/CR 1.6 (Wireless access mgmt): verify="**N/A.** No wireless interface on this device; wireless access is managed at the network layer." pass="N/A - justification recorded (not assessed as a control)." notes="N/A"
+row SR 1.6 (Wireless access mgmt): verify="**N/A.** No wireless interface on this device; wireless access is managed at the network layer." pass="N/A - justification recorded (not assessed as a control)." notes="N/A"
 row EDR 3.11 (Physical tamper resistance/detection): verify="Set the **keyswitch to RUN** in production (blocks remote program/mode change); keep the controller in a **locked, sealed enclosure**; secure/remove the **SD card**. The **Controller Log** records keyswitch/mode changes as tamper evidence. **Ext. tools:** physical inspection/photos; **Controller Log** export (keyswitch/mode events)." pass="Keyswitch in RUN; enclosure locked/sealed; SD secured; changes logged." notes="EDR-specific."
 external tool row: tool="Nmap (EtherNet/IP NSE)" verifies="Port/service exposure & segmentation (1.13, 5.1, 5.2, 7.7)" how="1) nmap -sT -p 44818,2222,80,443,161 -T2 <plc>; 2) nmap --script enip-info -p 44818 <plc>; 3) repeat FROM each zone/VLAN to prove segmentation (a blocked port = pass from an untrusted zone)." constraints="Tune timing (-T2) on production; authorized."
 external tool row: tool="openssl / testssl.sh" verifies="CIP Security certificate & cipher strength (1.5, 1.8, 1.9, 4.3)" how="1) openssl s_client -connect <plc>:2221 -dtls1_2; 2) pipe to 'openssl x509 -noout -dates -issuer -text' for key/algorithm/expiry; 3) testssl.sh --full <plc>:2221 for suite/protocol grading." constraints="Read-only."
-external tool row: tool="ReadOnlyEnum.py" verifies="Read-only host/interface/service enumeration (2.13, 7.7, 7.8)" how="1) python3 ReadOnlyEnum.py --target <plc> to enumerate exposed services/ports/interfaces without writing; 2) export results into the component inventory and least-functionality evidence." constraints="Needs read access; strictly read-only."
+external tool row: tool="ReadOnlyEnum.py" verifies="Read-only host/interface/service enumeration (2.13, 7.7, 7.8)" how="1) python3 ReadOnlyEnumv3.py (interactive console; add --no-color for plain session logs); 2) at the ReadOnlyEnum> prompt: set project <site>_<assetTag>, target <plc>, use ethernet_ip (List Identity / List Services / List Interfaces), show, scan; 3) results, then report json (or report all) and attach the report from ReadOnlyEnum_Results/ to the component inventory and least-functionality evidence." constraints="Needs read access; strictly read-only."
 external tool row: tool="pycomm3 / pylogix" verifies="Unauthenticated-CIP test (1.2, 3.1)" how="1) from an un-provisioned client run a pycomm3 LogixDriver read against the controller; 2) with CIP Security enforced the connection/read must be REFUSED (a success = finding)." constraints="ISOLATED/representative env; written authorization."
-footer: "Controlled - Project Use · Independent Assurance Authority · ISA/IEC 62443-3-3 / 4-2 · Product-specific companion to the 62443 assessment tool; confirm exact menu paths / CLI against the deployed firmware and the project hardening baseline. ISOLATED tools run only in a representative/lab environment with written authorization."
+footer: "Controlled - Project Use · Independent Assurance Services · ISA/IEC 62443-3-3 / 4-2 · Product-specific companion to the 62443 assessment tool; confirm exact menu paths / CLI against the deployed firmware and the project hardening baseline. ISOLATED tools run only in a representative/lab environment with written authorization."
 """
 
 SCHEMA_CHECKLIST = {
@@ -1437,11 +1630,29 @@ TOOL_CHECKLIST = {"name": "emit_sl3_checklist",
                   "description": "Return the COMPLETE ISA/IEC 62443-3-3/4-2 SL-3 testing cheat sheet. Every FR (FR1–FR7) present; every required SR/CR row and every component-specific row populated with native steps + Ext. tools, pass criteria, and notes.",
                   "schema": SCHEMA_CHECKLIST}
 
-DEFAULT_FOOTER = ("Controlled - Project Use · Independent Assurance Authority · ISA/IEC 62443-3-3 / 4-2 · "
+DEFAULT_FOOTER = ("Controlled - Project Use · Independent Assurance Services · ISA/IEC 62443-3-3 / 4-2 · "
                   "Product-specific companion to the 62443 assessment tool; confirm exact menu paths / CLI against "
                   "the deployed firmware and the project hardening baseline. ISOLATED tools run only in a "
                   "representative/lab environment with written authorization.")
 
+
+CAPTURE_ROW_INSTRUCTION = (
+    "'Session setup & evidence capture' — PRODUCT-SPECIFIC: (a) where a CLI/console exists, how to start a full "
+    "session record (PuTTY/SecureCRT full-session logging, `script -a <file>.log`, `Start-Transcript`) and the "
+    "product's own command to turn paging off and restore it afterwards — if paging is a global or persistent setting "
+    "on this product, tell testers to leave it as found; (b) the product's NATIVE backup / project / configuration "
+    "export: the tool, the exact menu path or command and the file extension (include BOTH (a) and (b) when both "
+    "exist; for web-only devices, the screenshot set and downloads); (c) the evidence file name "
+    "<site>_<zone>_<assetTag>_<vendor>_<model>_<fwRev>_<YYYYMMDD-HHMM>_<initials>.<ext> (CLI log: "
+    "<site>_<zone>_<assetTag>_<vendor>_<model>_<mgmtIP>_<YYYYMMDD-HHMM>_<testerInitials>.log; software: "
+    "<site>_<zone>_<assetTag>_<product>_<version>_<YYYYMMDD-HHMM>_<initials>.<ext>); (d) SHA-256 hash every backup at "
+    "collection, store only on the encrypted evidence share, never email in cleartext, follow retention / "
+    "classification; never save device passwords in PuTTY/SecureCRT/tool profiles; treat backups as sensitive "
+    "(credentials, keys); (e) the product actions testers must NEVER perform during read-only V&V (writes, "
+    "restores, resets, firmware updates, mode changes — name them for this product); (f) the offline-analysis "
+    "reminder: adjudicate Pass / Fail / Partial / N/A / Deferred from the evidence, then write by hand the "
+    "executive-summary narrative, the overall assurance level + justification, and the recommendations / punch list."
+)
 
 def build_requirement_skeleton(codes):
     """Explicit list of every requirement row the model MUST produce, grouped by FR,
@@ -1467,7 +1678,7 @@ TOOL_PALETTE = """SEED TOOL PALETTE — NON-EXHAUSTIVE. Choose per product AND p
 [Fuzzing / input validation — ISOLATED only] boofuzz, Sulley/Peach, aegis, Synopsys Defensics, ISASecure test suites, Wycheproof (crypto).
 [Config / hardening baselines & audit] CIS-CAT Pro, OpenSCAP/SCAP, Lynis, Microsoft Security Compliance Toolkit / secpol / GPO, PowerShell/AuditPol, chkrootkit, osquery.
 [Passive OT monitoring, inventory & vuln] Claroty, Nozomi Guardian, Dragos, Forescout/SilentDefense, Tenable.ot/Nessus, Industrial Defender, Microsoft Defender for IoT; SIEM/syslog (Splunk, Elastic, Wazuh), nc -lu 514.
-[Read-only host/network/interface enumeration] ReadOnlyEnum.py (asset-owner tool) — run read-only to enumerate exposed services/ports/interfaces for inventory and least-functionality checks.
+[Read-only host/network/interface enumeration] ReadOnlyEnum.py (Isiah Jones's native-Python, zero-dependency read-only enumeration and configuration audit tool) — run read-only to enumerate exposed services/ports/interfaces for inventory and least-functionality checks. v3 is an interactive console with NO command-line flags except --no-color: python3 ReadOnlyEnumv3.py, then at the ReadOnlyEnum> prompt: set project <name>, target <host|CIDR|range>, use <module,...|category> (e.g. modbus_tcp, s7comm, ethernet_ip, bacnet; 'modules' lists all), optional set ports / set timeout, show, scan, results, report <md|json|txt|html|pdf|docx|all> (default folder ReadOnlyEnum_Results/). Never invent flags such as --target.
 [Exploit validation as authorized] Kali / Metasploit ICS modules, vendor advisories/CVE cross-check (ICS-CERT, vendor PSIRT) — mirror/lab with written authorization only.
 [Backup/DR & integrity] vendor DR (e.g. AssetCentre DR), sha256sum/hashing, config-diff/baseline-compare tools."""
 
@@ -1491,14 +1702,17 @@ def build_checklist_prompt(target, scope, classification, artifact_ctx, web_ctx,
     if web_ctx:
         parts.append(f"\n# WEB SOURCES (scraped)\n{web_ctx}")
     parts.append("\n# REQUIREMENT COVERAGE — YOU MUST PRODUCE ONE ROW FOR EVERY LINE BELOW\n"
-                 "(Use the sheet id convention: pair SR x.y + CR x.y as 'SR/CR x.y'; keep component rows as "
-                 "EDR/HDR/NDR/SAR x.y. Group rows under their FR. Do not skip any line; use N/A justifications where "
-                 "a control genuinely does not apply.)\n" + skeleton)
+                 "(Copy each req_id exactly as listed — the labels are already correct for this component type. "
+                 "One row per line, never merged. Group rows under their FR. Do not skip any line; use N/A "
+                 "justifications where a control genuinely does not apply.)\n" + skeleton)
     parts.append("\n# PREAMBLE ROWS TO PRODUCE (adapt labels to the product)\n"
-                 "Produce 3–4 preamble rows: 'Where to work' (the tools/UIs/consoles + key file/log locations), "
+                 "Produce 5–8 preamble rows: 'Where to work' (the tools/UIs/consoles + key file/log locations), "
                  "'Interfaces / ports' (protocols + port numbers), a product-appropriate firmware/version row "
-                 "(label it 'Firmware note' for devices or e.g. 'Version notes' / 'x.y vs a.b' for software), and "
-                 "'How to read'.")
+                 "(label it 'Firmware note' for devices or e.g. 'Version notes' / 'x.y vs a.b' for software), "
+                 + CAPTURE_ROW_INSTRUCTION + " Add 'Certification' (exact scope and conditions) and 'Advisories (as "
+                 "of <date>)' rows when known, a 'Reclassify trigger' row when the component type is borderline, and "
+                 "'How to read' (read-only default; Pass / Fail / Partial / N/A / Deferred; ISOLATED / by-exception "
+                 "tools).")
     parts.append("\n# COLUMN HEADERS\nSet col_verify_header to a product-appropriate phrasing of "
                  "'Where & how to verify (native steps + Ext. tools)' (e.g. 'Where & how to verify in <Product>'). "
                  "Set col_notes_header to 'Notes / firmware' for devices, or a version-specific label for software.")
@@ -1512,10 +1726,11 @@ def build_checklist_prompt(target, scope, classification, artifact_ctx, web_ctx,
     parts.append(f"\n# FOOTER\nUse exactly this footer text unless the product demands a tweak:\n{DEFAULT_FOOTER}")
     parts.append("\n" + STYLE_EXEMPLAR)
     parts.append("\n# TASK\nProduce the COMPLETE SL-3 cheat sheet as the structured object. Every FR present; every "
-                 "requirement line above becomes a row. Each 'verify' cell MUST contain NUMBERED step-by-step native "
-                 "configuration/verification steps ('Native steps: 1) … 2) …' with real menu paths/settings) FOLLOWED "
-                 "by 'Ext. tools:' with the SPECIFIC tools chosen for that requirement and the exact command/flags or "
-                 "click-path to run each. Select tools per requirement (do not repeat Nmap/Wireshark everywhere). "
+                 "requirement line above becomes a row. Each 'verify' cell gives the exact native menu path / screen "
+                 "and setting in tight prose (as in the example), an optional '**Test:**', then '**Ext. tools:**' with "
+                 "the SPECIFIC tools chosen for that requirement and the exact command/flags or click-path to run "
+                 "each, then '**V&V evidence:**' naming the screenshot/export/log/photo. Select tools per requirement "
+                 "(do not repeat Nmap/Wireshark everywhere). "
                  "Build the External Test Tools table from the tools you actually used (native + open-source + "
                  "commercial + ReadOnlyEnum.py where relevant), each with step-by-step usage and constraints. Match "
                  "the example's density and voice. Target SL = SL 3.")
@@ -1538,7 +1753,7 @@ SCHEMA_HEADER = {
     "required": ["product", "preamble"],
 }
 TOOL_HEADER = {"name": "emit_sheet_header",
-               "description": "Return the cheat-sheet header: product, component-type label, column headers, and the 3-4 preamble rows.",
+               "description": "Return the cheat-sheet header: product, component-type label, column headers, and the 5-8 preamble rows (incl. the product-specific session setup & evidence capture row).",
                "schema": SCHEMA_HEADER}
 
 _ROW_SCHEMA = {"type": "object", "properties": {
@@ -1598,14 +1813,22 @@ _COMPACT_STYLE = (
     "HART/WirelessHART DTM/handheld, pycomm3, python-snap7, OPC UA, IEC 61850, DNP3) for auth/read tests; Hydra/Medusa "
     "for lockout (isolated); fuzzers for input validation (isolated); CIS-CAT/OpenSCAP/Lynis for hardening; Claroty/"
     "Nozomi/Dragos/Tenable.ot for monitoring; ReadOnlyEnum.py for read-only enumeration.\n"
-    "• 'pass' = one crisp testable criterion/evidence. 'notes' = firmware/version caveat or Compensating/Partial/N-A.\n"
+    "• End 'verify' with '**V&V evidence:**' naming the screenshot / export / log / photo that proves the row.\n"
+    "• 'pass' = one crisp testable criterion an assessor can adjudicate Pass / Fail / Partial / N/A / Deferred. "
+    "'notes' = firmware/version caveat, or 'Partial + compensating control + residual risk', or 'N/A / Deferred + "
+    "compensating' (only when access is genuinely out of scope).\n"
+    "• Read-only by default: write / exploit / fuzz / DoS / brute-force / active-scan steps are 'ISOLATED / by "
+    "exception' (isolated or representative environment, written authorization). CLI: one command per line, verify "
+    "with show/get commands (never config commands), exact verbs for this OS family/version. If a path or command "
+    "cannot be verified from the sources, write 'confirm against <document>'.\n"
     "• DECIDE APPLICABILITY FROM THE PRODUCT FACTS/MANUAL ABOVE. If the manual/datasheet shows a control does not "
     "apply to THIS product (e.g. no wireless on a wired-only device; no local user database; single-purpose device "
     "with no partitioning; power handled at facility level), set verify to a one-line '**N/A.** <why, referencing the "
     "product>' justification, pass = 'N/A - justification recorded (not assessed as a control)', notes = 'N/A'. Where "
     "the device itself can't meet a control but a gateway/host/EWS can, give that compensating control concisely and "
     "mark notes 'Compensating' or 'Partial + compensating'.\n"
-    "• Req id convention: 'SR/CR x.y' when both apply; else 'SR x.y'/'CR x.y'; component rows 'EDR/HDR/NDR/SAR x.y'.")
+    "• Req id: copy each req_id EXACTLY as listed above (already correct for this component type). One requirement "
+    "per row — never merge numbers ('1.5 / 1.7') and avoid slash pairs of requirement numbers even in prose.")
 
 
 def _rev_block(revision, current):
@@ -1622,9 +1845,13 @@ def build_header_prompt(shared, revision=None, current=None):
     return (shared + "\n\n# TASK\nReturn the cheat-sheet HEADER only. Provide: product (full name/model), "
             "component_type_label, target_sl='SL 3', col_verify_header (e.g. 'Where & how to verify (native steps + "
             "Ext. tools)' or 'Where & how to verify in <Product>'), col_notes_header ('Notes / firmware' for devices; "
-            "a version label for software), and 3-4 preamble rows: 'Where to work' (tools/UIs/consoles + key file/log "
-            "locations), 'Interfaces / ports' (protocols + port numbers), a firmware/version row, and 'How to read'. "
-            "Ground every value in the product facts above; state assumptions rather than inventing specifics."
+            "a version label for software), and 5-8 preamble rows: 'Where to work' (tools/UIs/consoles + key file/log "
+            "locations), 'Interfaces / ports' (protocols + port numbers), a firmware/version row, "
+            + CAPTURE_ROW_INSTRUCTION + " Add 'Certification' (exact scope and conditions) and 'Advisories (as of "
+            "<date>)' rows when known, a 'Reclassify trigger' row when the component type is borderline, and 'How to "
+            "read' (read-only default; Pass / Fail / Partial / N/A / Deferred; ISOLATED / by-exception tools). "
+            "Ground every value in the product facts above; state assumptions rather than inventing specifics; write "
+            "'confirm against <document>' for anything you cannot verify."
             + _rev_block(revision, current))
 
 
@@ -1647,9 +1874,10 @@ def build_tools_prompt(shared, rows_digest, revision=None, current_tools=None):
             "\n\n# TASK\nReturn the External Test Tools table as {\"external_tools\":[...]}: 8-16 entries covering the "
             "vendor-native tools, the open-source and commercial tools, and ReadOnlyEnum.py where host/interface "
             "enumeration applies. For each: 'tool' (name), 'verifies' (what + the requirement numbers, e.g. "
-            "'(1.5, 4.3)'), 'how' (concise commands/flags or click-path), and 'constraints' "
-            "(e.g. 'ISOLATED/lab only', 'passive SPAN/tap', 'read-only', 'authorized window'). Include only tools that "
-            "actually apply to THIS product's interfaces/protocols.")
+            "'(1.5, 4.3)'), 'how' (concise commands/flags or click-path, one command per step), and 'constraints' "
+            "(e.g. 'read-only', 'passive SPAN/tap', 'authorized window'; every write / exploit / fuzz / DoS / brute-force "
+            "/ active-scan tool = 'ISOLATED / by exception — written authorization'). Include only tools that actually "
+            "apply to THIS product's interfaces/protocols.")
 
 
 REFINE_SYSTEM = CHECKLIST_SYSTEM + (
@@ -1715,6 +1943,59 @@ def checklist_missing(rep):
     return problems
 
 
+_MERGED_RE = re.compile(r"(?<![\d.])\d{1,2}\.\d{1,2} ?/ ?\d{1,2}\.\d{1,2}(?![\d.])")
+_SLASH_CLI_RE = re.compile(r"\bshow\s+(?:[a-z0-9\-]+\s+)*[a-z0-9\-]+/[a-z][a-z0-9\-]*\b", re.I)
+
+
+def checklist_qa(rep):
+    """v1.1.0 QA gates (same intent as the checklist library's delivery gates). Returns a
+    list of short issue strings — empty when the sheet passes. Run after normalization."""
+    issues = []
+    if not isinstance(rep, dict):
+        return ["not-an-object"]
+    codes = [c for c in (rep.get("component_type_codes") or []) if c in COMPONENT_TYPES] or ["EDR"]
+    idx = requirement_index(codes)
+    valid = {v[0] for v in idx.values()}
+    rows = [r for fr in (rep.get("foundational_requirements") or []) for r in (fr.get("rows") or [])]
+    bad = [r.get("req_id", "") for r in rows if r.get("req_id", "") not in valid]
+    if bad:
+        issues.append("invalid requirement label(s): " + ", ".join(bad[:6]))
+    got = {row_numbers(r.get("req_id", ""))[0] for r in rows if row_numbers(r.get("req_id", ""))}
+    miss = [idx[n][0] for n in idx if n not in got]
+    if miss:
+        issues.append(f"{len(miss)} required requirement row(s) absent: " + ", ".join(miss[:6]))
+    notgen = [r.get("req_id", "") for r in rows if (r.get("verify") or "").startswith("(not generated")]
+    if notgen:
+        issues.append(f"{len(notgen)} row(s) not generated — use Refine: " + ", ".join(notgen[:6]))
+    stubs = [r.get("req_id", "") for r in rows if (r.get("verify") or "").startswith("Assessed with the same evidence as")]
+    if stubs:
+        issues.append(f"{len(stubs)} row(s) split from merged rows carry shared-evidence stubs — use Refine: "
+                      + ", ".join(stubs[:6]))
+    merged_txt = sorted({r.get("req_id", "") for r in rows
+                         if _MERGED_RE.search(" ".join(str(r.get(k, "")) for k in ("verify", "pass", "notes")))})
+    if merged_txt:
+        issues.append("slash pair of requirement numbers in text (write 'x.y and a.b'): " + ", ".join(merged_txt[:6]))
+    slash_cli = sorted({r.get("req_id", "") for r in rows if _SLASH_CLI_RE.search(str(r.get("verify", "")))})
+    if slash_cli:
+        issues.append("possible slash-merged CLI command (one command per line): " + ", ".join(slash_cli[:6]))
+    no_vv = [r.get("req_id", "") for r in rows
+             if "v&v evidence" not in (str(r.get("verify", "")) + str(r.get("pass", ""))).lower()
+             and not str(r.get("pass", "")).strip().upper().startswith("N/A")
+             and not (r.get("verify") or "").startswith(("(not generated", "Assessed with the same evidence as"))]
+    if no_vv:
+        issues.append(f"{len(no_vv)} row(s) without a 'V&V evidence:' clause: " + ", ".join(no_vv[:6])
+                      + (" …" if len(no_vv) > 6 else ""))
+    cap = [p for p in (rep.get("preamble") or []) if _is_capture_label(p.get("label", ""))]
+    if not cap:
+        issues.append("no session setup / evidence capture row")
+    elif all((p.get("text") or "").startswith("**Generic") for p in cap):
+        issues.append("evidence capture row is the generic fallback — use Refine for product-specific capture steps")
+    blob = json.dumps(rep)
+    if "Independent Assurance Authority" in blob:
+        issues.append("retired wording 'Independent Assurance Authority' present (use 'Independent Assurance Services')")
+    return issues
+
+
 def generate_checklist(provider, model, user, images, api_key, base_url, max_tokens=20000):
     rep = _gen_structured(provider, model, CHECKLIST_SYSTEM, user, TOOL_CHECKLIST, images,
                           api_key, base_url, max_tokens)
@@ -1734,8 +2015,13 @@ def generate_checklist(provider, model, user, images, api_key, base_url, max_tok
     return normalize_checklist(rep)
 
 
-def normalize_checklist(rep):
-    """Fill defaults and order FRs so the PDF renderer always has clean input."""
+def normalize_checklist(rep, log=None):
+    """Fill defaults and normalize the requirement rows so the PDF/HTML renderers always
+    get clean, correctly labelled input. v1.1.0: rows are split / relabelled / re-filed /
+    de-duplicated against the canonical 62443 map for the sheet's component type(s), cell
+    markup is cleaned, the evidence-capture preamble row is guaranteed, and the retired
+    'Independent Assurance Authority' footer wording is replaced. Idempotent — saved
+    v1.0 sheets are corrected the same way when they are opened or exported."""
     if not isinstance(rep, dict):
         rep = {}
     rep.setdefault("target_sl", "SL 3")
@@ -1744,15 +2030,52 @@ def normalize_checklist(rep):
     rep.setdefault("footer", DEFAULT_FOOTER)
     rep.setdefault("preamble", [])
     rep.setdefault("external_tools", [])
-    frs = rep.get("foundational_requirements") or []
-    def frkey(fr):
-        k = (fr.get("fr") or "").upper().replace(" ", "")
-        for i, f in enumerate(FR_ORDER):
-            if k.startswith(f):
-                return i
-        return 99
-    rep["foundational_requirements"] = sorted(frs, key=frkey)
+    rep["footer"] = (rep.get("footer") or DEFAULT_FOOTER).replace(
+        "Independent Assurance Authority", "Independent Assurance Services")
+    codes = [c for c in (rep.get("component_type_codes") or []) if c in COMPONENT_TYPES] or ["EDR"]
+    for fr in (rep.get("foundational_requirements") or []):
+        for row in (fr.get("rows") or []):
+            if isinstance(row, dict):
+                for k in ("verify", "pass", "notes"):
+                    row[k] = clean_cell_text(row.get(k, "") or "")
+    for pr in rep["preamble"]:
+        if isinstance(pr, dict):
+            pr["label"] = clean_cell_text(pr.get("label", "") or "")
+            pr["text"] = clean_cell_text(pr.get("text", "") or "")
+    for t in rep["external_tools"]:
+        if isinstance(t, dict):
+            for k in ("tool", "verifies", "how", "constraints"):
+                t[k] = clean_cell_text(t.get(k, "") or "")
+    if not any(_is_capture_label(p.get("label", "")) for p in rep["preamble"] if isinstance(p, dict)):
+        rep["preamble"].append(dict(DEFAULT_CAPTURE_ROW))
+    rep["foundational_requirements"] = normalize_requirement_rows(
+        rep.get("foundational_requirements") or [], codes, log)
     return rep
+
+
+def _is_capture_label(label):
+    low = (label or "").lower()
+    return "capture" in low or "evidence" in low
+
+
+# Generic fallback for the evidence-capture preamble row (used only when the model did not
+# write a product-specific one; the QA audit flags it so the user can Refine).
+DEFAULT_CAPTURE_ROW = {
+    "label": "Session setup & evidence capture",
+    "text": ("**Generic — regenerate for product-specific steps.** Start a full record of every session (logged "
+             "SSH/console session with paging turned off using the product's own command — if paging is a global, "
+             "persistent setting, leave it as found; or a screen recording / screenshot set for web UIs). Take the "
+             "product's **native backup / project / configuration export** as well when it has one (include both when "
+             "both exist). Name files **<site>_<zone>_<assetTag>_<vendor>_<model>_<fwRev>_<YYYYMMDD-HHMM>_<initials>"
+             ".<ext>** (CLI log: **<site>_<zone>_<assetTag>_<vendor>_<model>_<mgmtIP>_<YYYYMMDD-HHMM>_"
+             "<testerInitials>.log**). **SHA-256** hash every backup at collection; store only on the **encrypted "
+             "evidence share**; never email evidence in cleartext; follow retention/classification. Never save device "
+             "passwords in PuTTY/SecureCRT/tool profiles; treat backups as sensitive (they can hold credentials and "
+             "keys). Never write, restore, reset, update firmware or change modes during read-only V&V. **Offline "
+             "analysis:** adjudicate each row Pass / Fail / Partial / N/A / Deferred from the evidence, then write by "
+             "hand the executive-summary narrative, the overall assurance level + justification, and the "
+             "recommendations / punch list."),
+}
 
 
 # Provider errors that will affect EVERY call (billing/credits, auth, rate-limit):
@@ -1791,10 +2114,14 @@ def _gen_fr_rows(provider, model, shared, fr_code, codes, api_key, base_url, pro
 
 
 def _covered_numbers(rows):
+    """v1.1.0: a row covers only its PRIMARY (first) requirement number. A merged row such
+    as '1.5 / 1.7' no longer counts as covering 1.7, so the dropped requirement is
+    backfilled as its own row (no merging, ever)."""
     nums = set()
     for r in (rows or []):
-        for m in re.findall(r"\d+\.\d+", r.get("req_id", "") or ""):
-            nums.add(m)
+        found = row_numbers(r.get("req_id", "") or "")
+        if found:
+            nums.add(found[0])
     return nums
 
 
@@ -1910,7 +2237,15 @@ def generate_checklist_streamed(provider, model, classification, target, scope,
         progress(f"External Test Tools step could not complete ({str(e)[:60]}).")
         rep["external_tools"] = []
     progress(f"External Test Tools: {len(rep['external_tools'])} tool(s). Finalizing…")
-    return normalize_checklist(rep), real_rows
+    # 4) v1.1.0 normalization (split merged rows, canonical labels, FR filing, de-dup) + QA audit.
+    log = []
+    rep = normalize_checklist(rep, log)
+    for m in log:
+        progress(f"Normalizer: {m}.")
+    rep["qa_log"] = log
+    for issue in checklist_qa(rep):
+        progress(f"QA check: {issue}")
+    return rep, real_rows
 
 
 # =============================================================================
@@ -1981,7 +2316,7 @@ def _pdf_esc(s):
 
 
 # Inline-bold keyword leads rendered bold inside a wrapped cell.
-_KW_RE = re.compile(r"(Ext\. tools:|Native:|Test:|Pass:|Evidence:|Tools:|Example:|N/A\.?|"
+_KW_RE = re.compile(r"(Ext\. tools:|V&V evidence:|Native:|Test:|Pass:|Evidence:|Tools:|Example:|N/A\.?|"
                     r"Native config:|Native steps:)")
 
 
@@ -2005,6 +2340,8 @@ def _markup_runs(text):
     # Put 'Ext. tools:' on its own line and normalize any asterisks around the lead
     # so the bold markers stay paired on one line.
     text = re.sub(r"\s*\*{0,2}\s*(Ext\.?\s*tools:)\s*\*{0,2}", r"\n**\1**", text)
+    # v1.1.0: 'V&V evidence:' also starts its own line (same treatment as 'Ext. tools:').
+    text = re.sub(r"\s*\*{0,2}\s*(V&V evidence:)\s*\*{0,2}", r"\n**\1**", text)
     runs, pos = [], 0
     for mm in re.finditer(r"\*\*(.+?)\*\*", text):
         if mm.start() > pos:
@@ -2159,11 +2496,13 @@ class SheetPDF:
             self.text(self.ML + pad, ty, ln, size=ssize, bold=False, color=self.SUB)
         self.y = top - h - 8
 
-    def section_band(self, text):
+    def section_band(self, text, keep=24):
         size = 9.2
         pad = 4
         h = size + 2 * pad
-        self.ensure(h + 24)   # keep band with at least the header of its table
+        # keep band with at least the header of its table; v1.1.0 callers pass the real
+        # height of the table header + first row so an FR heading is never orphaned at a page foot
+        self.ensure(h + keep)
         top = self.y
         self.rect(self.ML, top - h, self.cw, h, fill=self.NAVY)
         self.text(self.ML + 6, top - pad - size + 1.5, text, size=size, bold=True, color=(1, 1, 1))
@@ -2258,6 +2597,30 @@ class SheetPDF:
             self.y = top - hh
         self.y -= 8
 
+    def table_lead_height(self, headers, first_row, colw, rich_cols=(), size=7.4, header_size=7.4,
+                          bold_col0=True):
+        """v1.1.0: height of a table's header plus its first row, so a section band can be
+        kept together with them (FR headings are no longer orphaned at a page foot)."""
+        pad = 3.4
+        line_h = size + 2.2
+        hh = max(len(pdf_wrap(str(c), header_size, colw[i] - 2 * pad, True))
+                 for i, c in enumerate(headers)) * line_h + 2 * pad
+        if not first_row:
+            return hh
+        nl = 1
+        for i, c in enumerate(first_row):
+            c = "" if c is None else str(c)
+            if i in rich_cols:
+                n = len(pdf_wrap_runs(_markup_runs(c), size, colw[i] - 2 * pad))
+            else:
+                n = len(pdf_wrap(c.replace("**", ""), size, colw[i] - 2 * pad, bold_col0 and i == 0))
+            nl = max(nl, n)
+        rh = nl * line_h + 2 * pad
+        # a first row taller than a page is split by the page break anyway — keep only the header then
+        if rh > (self.PH - self.MT - self.MB) * 0.6:
+            return hh
+        return hh + rh
+
     def disclaimer(self, text):
         size = 6.6
         self.ensure(30)
@@ -2339,7 +2702,9 @@ def pdf_available():
 def checklist_to_pdf(rep, meta=None):
     """Render the cheat sheet to a landscape-Letter PDF using the built-in engine
     (no third-party dependencies)."""
-    rep = rep or {}
+    # v1.1.0: render from a normalized copy (canonical labels, no merged rows, cleaned markup,
+    # current footer wording) so saved v1.0 sheets export corrected too.
+    rep = normalize_checklist(json.loads(json.dumps(rep or {})))
     product = rep.get("product", "") or "Component"
     doc = SheetPDF(title=f"{product} 62443 SL-3 Cheat Sheet", footer_left=product)
     doc.title_band(product, rep.get("component_type_label", ""), rep.get("target_sl", "SL 3"))
@@ -2354,21 +2719,23 @@ def checklist_to_pdf(rep, meta=None):
     for fr in (rep.get("foundational_requirements") or []):
         frname = fr.get("fr", "")
         frtitle = fr.get("title", "") or FR_TITLES.get(frname.replace(" ", ""), "")
-        doc.section_band(f"{frname} - {frtitle}")
         rows, na = [], []
         for row in (fr.get("rows") or []):
             rows.append([row.get("req_id", ""), row.get("requirement", ""),
                          row.get("verify", ""), row.get("pass", ""), row.get("notes", "")])
             na.append(row.get("pass", "").strip().upper().startswith("N/A"))
+        doc.section_band(f"{frname} - {frtitle}",
+                         keep=doc.table_lead_height(headers, rows[0] if rows else None, colw, {2, 3, 4}))
         doc.data_table(headers, rows, colw, na_flags=na, bold_col0=True, rich_cols={2, 3, 4})
 
     ext = rep.get("external_tools") or []
     if ext:
-        doc.section_band("External Test Tools - how to use")
         eh = ["Tool / method", "Verifies", "How to use - steps / example", "Constraints"]
         ecolw = [0.185 * doc.cw, 0.235 * doc.cw, 0.44 * doc.cw, 0.14 * doc.cw]
         erows = [[t.get("tool", ""), t.get("verifies", ""), t.get("how", ""), t.get("constraints", "")]
                  for t in ext]
+        doc.section_band("External Test Tools - how to use",
+                         keep=doc.table_lead_height(eh, erows[0] if erows else None, ecolw, {1, 2, 3}))
         doc.data_table(eh, erows, ecolw, bold_col0=True, rich_cols={1, 2, 3})
 
     doc.disclaimer(rep.get("footer") or DEFAULT_FOOTER)
@@ -2382,6 +2749,7 @@ def _h(s):
 def _h_ext(s):
     t = _htmlmod.escape(s or "", quote=False)
     t = re.sub(r"\s*(Ext\.?\s*tools:)", r"<br>\1", t, count=1)   # Ext. tools: on its own line
+    t = re.sub(r"\s*\**\s*(V&amp;V evidence:)\s*\**", r"<br>**\1**", t, count=1)  # v1.1.0: own line
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)       # **bold** key terms
     t = _KW_RE.sub(r"<strong>\g<0></strong>", t)                  # bold keyword leads
     return t.replace("\n", "<br>")
@@ -2391,6 +2759,7 @@ def checklist_to_html(rep, meta=None, standalone=False):
     """Render the cheat sheet as HTML — used for the on-screen results view and as a
     print-to-PDF (landscape) fallback when reportlab is not installed."""
     meta = meta or {}
+    rep = normalize_checklist(json.loads(json.dumps(rep or {})))   # v1.1.0: same normalized view as the PDF
     col_verify = rep.get("col_verify_header") or "Where & how to verify (native steps + Ext. tools)"
     col_notes = rep.get("col_notes_header") or "Notes / firmware"
     out = []
@@ -2450,7 +2819,10 @@ body { font-family: Helvetica, Arial, sans-serif; color:#1b2430; margin:0; }
 .cs-pre { width:100%; border-collapse:collapse; margin-bottom:8px; font-size:7.6px; }
 .cs-pre td { vertical-align:top; padding:3px 5px; border-bottom:.5px solid #d7dee7; }
 .cs-pre td.k { width:130px; font-weight:700; background:#f4f6f9; }
-.cs-fr { background:#0b3d63; color:#fff; font-weight:700; font-size:9.5px; padding:3px 6px; margin-top:9px; }
+.cs-fr { background:#0b3d63; color:#fff; font-weight:700; font-size:9.5px; padding:3px 6px; margin-top:9px;
+         break-after:avoid; page-break-after:avoid; }
+.cs-tbl thead { display:table-header-group; }
+.cs-tbl tr { break-inside:avoid; page-break-inside:avoid; }
 .cs-tbl { width:100%; border-collapse:collapse; font-size:7.5px; }
 .cs-tbl th { background:#e7edf4; text-align:left; font-weight:700; }
 .cs-tbl th, .cs-tbl td { border:.4px solid #9aa7b8; vertical-align:top; padding:2.6px 3.5px; line-height:1.28; }
@@ -2647,7 +3019,7 @@ def run_generate(payload, progress=None):
     meta = {"target": target, "provider": provider, "model": model, "generated_at": created}
     return {"id": cid, "report": rep, "html": checklist_to_html(rep, meta),
             "sources": sources, "reportlab": pdf_available(),
-            "missing": checklist_missing(rep)}
+            "missing": checklist_missing(rep) + checklist_qa(rep), "qa": checklist_qa(rep)}
 
 
 def run_refine_streamed(payload, progress=None):
@@ -2677,7 +3049,8 @@ def run_refine_streamed(payload, progress=None):
     rep["component_type_codes"] = classification["component_type_codes"]
     db_update(cid, rep)
     return {"id": cid, "report": rep, "html": checklist_to_html(rep),
-            "reportlab": pdf_available(), "missing": checklist_missing(rep)}
+            "reportlab": pdf_available(), "missing": checklist_missing(rep) + checklist_qa(rep),
+            "qa": checklist_qa(rep)}
 
 
 # =============================================================================
@@ -2747,9 +3120,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             m = db_get(cid)
             if not m:
                 return self._json({"error": "not found"}, 404)
-            rep = m.get("report") or {}
+            rep = normalize_checklist(m.get("report") or {})   # v1.1.0: saved v1.0 sheets corrected on open
+            m["report"] = rep
             m["html"] = checklist_to_html(rep)
             m["reportlab"] = pdf_available()
+            m["qa"] = checklist_qa(rep)
             return self._json(m)
         return self._json({"error": "not found"}, 404)
 
@@ -2897,13 +3272,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._json({"error": str(e)}, 502)
         except ValueError as e:
             return self._json({"error": f"Model did not return valid data: {e}"}, 422)
-        rep = normalize_checklist(rep)
+        # v1.1.0: keep the sheet's component type(s) BEFORE normalizing, so rows are labelled
+        # against the right 62443-4-2 requirement set.
+        rep = rep if isinstance(rep, dict) else {}
         rep.setdefault("product", current.get("product") or row.get("product"))
         rep.setdefault("component_type_label", current.get("component_type_label"))
-        rep.setdefault("component_type_codes", current.get("component_type_codes") or [])
+        rep["component_type_codes"] = current.get("component_type_codes") or rep.get("component_type_codes") or []
+        rep = normalize_checklist(rep)
         db_update(cid, rep)
         return self._json({"id": cid, "report": rep, "html": checklist_to_html(rep),
-                           "reportlab": pdf_available()})
+                           "reportlab": pdf_available(), "qa": checklist_qa(rep)})
 
 
 def _safe_name(s):
@@ -3337,7 +3715,7 @@ async function openSaved(){
 window.loadSaved=async id=>{const m=await fetch('/api/checklists/'+id).then(x=>x.json());
  STATE.id=id;STATE.report=m.report;STATE.reportlab=m.reportlab;
  $('#savedPanel').classList.add('hidden');$('#wizard').classList.add('hidden');$('#results').classList.remove('hidden');
- $('#r-title').textContent=m.product||'SL-3 Cheat Sheet';$('#r-meta').textContent=`${(m.report||{}).component_type_label||''} · ${m.created_at||''}`;
+ $('#r-title').textContent=m.product||'SL-3 Cheat Sheet';$('#r-meta').textContent=`${(m.report||{}).component_type_label||''} · ${m.created_at||''}`+(m.qa&&m.qa.length?` · ⚠ check: ${m.qa.join(', ')}`:'');
  $('#sheet').innerHTML=m.html||'';$('#pdfBtn').style.display=m.reportlab?'inline-block':'none';window.scrollTo(0,0);};
 window.delSaved=async id=>{await fetch('/api/checklists/'+id,{method:'DELETE'});openSaved();};
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
