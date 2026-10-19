@@ -10,6 +10,7 @@ GitHub's file browser shows `index.html` as source code; use the link above to v
 - `ICS_OT_IoT_Cyber_Physical_Catalog.pptx` — PowerPoint version
 - `ICS_OT_IoT_Cyber_Physical_Catalog.docx` — Word version
 - `ICS_OT_IoT_Cyber_Physical_Catalog.pdf` — PDF version
+- `ICS_OT_IoT_Cyber-Physical_Protocols___OSINT_Technical_Training.pdf` — ICS/OT/IoT cyber-physical protocols & OSINT technical training slides (PDF)
 
 ## Scenario images
 
