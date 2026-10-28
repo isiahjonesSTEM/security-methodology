@@ -14,6 +14,7 @@ The repository is organized into the following directories:
 
 - [Check out my Home Page](https://isiahjonesstem.github.io/security-methodology/)
 - [`AI_Tools_Research`](./AI_Tools_Research) – AI-related tools and research (including the threat modeling tool).
+  - [`Design Requirements Templates`](./AI_Tools_Research/Design%20Requirements%20Templates) – ISA/IEC 62443 SL-T 3 URS, FRS, SDS and HDS templates (Word and PDF) for a modular cooling plant integrated with a building management system.
 - [`Commands_Scripts`](./Commands_Scripts) – Useful command-line scripts for security tasks.
 - [`Papers_Guides_Reports`](./Papers_Guides_Reports) – White papers, guides, and security reports.
 - [`Security_Research`](./Security_Research) – Various security research projects.
